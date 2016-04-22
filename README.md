@@ -2,10 +2,6 @@
 
 dploy the DC/OS deployment tool for appops.
 
-- Flow like kploy
-- Write in Go using Marathon API
-- Sharing based on Universe
-
 ## Commands
 
 - `dploy init` … creates a new app for you, that is a `dploy.app` file is created in current dir with default values
