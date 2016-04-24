@@ -1,4 +1,4 @@
-package main
+package dploy
 
 import "testing"
 
