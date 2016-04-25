@@ -23,7 +23,7 @@ Download binaries:
 
 As a preparation to deal with the JWT Auth, you can simply create an SSH tunnel to the DC/OS Master:
 
-    $ ssh -i ~/.ssh/MYKEY core@MYMASTER -L 8080:localhost:8080 -N
+    $ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
 
 From here on, use `http://localhost:8080` for the Marathon base URL.
 

@@ -1,7 +1,6 @@
 package dploy
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
 	"net/url"
@@ -26,17 +25,32 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	return applications
 }
 
+func marathonGetInfo(marathonURL url.URL) *marathon.Info {
+	client := marathonClient(marathonURL)
+	info, err := client.Info()
+	if err != nil {
+		log.Fatalf("Failed to get Marathon info. Error: %s", err)
+	}
+	return info
+}
+
 func Init(location string) {
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
 }
 
 func DryRun() {
-	marathonURL, err := url.Parse("http://localhost:8080/v2/apps")
+	marathonURL, err := url.Parse("http://localhost:8080")
 	if err != nil {
 		log.Fatal(err)
 	}
-	applications := marathonGetApps(*marathonURL)
-	for _, application := range applications.Apps {
-		fmt.Printf("Application: %s", application)
-	}
+	info := marathonGetInfo(*marathonURL)
+	log.SetLevel(log.DebugLevel)
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Info("Found DC/OS Marathon instance")
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" name: ", info.Name)
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" version: ", info.Version)
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" leader: ", info.Leader)
+
+	// for _, application := range applications.Apps {
+	// 	fmt.Printf("Application: %s", application)
+	// }
 }
