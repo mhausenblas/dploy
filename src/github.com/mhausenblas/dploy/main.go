@@ -16,6 +16,8 @@ func usage() {
 	fmt.Println("Usage: dploy <command> [<args>]\n")
 	fmt.Println("Available commands:")
 	fmt.Println(" init ... creates a new app for you, that is, a `dploy.app` file with default values is created in -location")
+	fmt.Println(" dryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
+
 }
 
 func main() {
@@ -30,6 +32,8 @@ func main() {
 		if initCmd.Parsed() {
 			dploy.Init(*locFlag)
 		}
+	case "dryrun":
+		dploy.DryRun()
 	default:
 		fmt.Printf("%q is not a valid command\n", os.Args[1])
 		usage()
