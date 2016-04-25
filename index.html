@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>dploy by mhausenblas</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">dploy</h1>
+        <p class="header">The DC/OS deployment tool for appops</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/mhausenblas/dploy/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/mhausenblas/dploy/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/mhausenblas/dploy">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/mhausenblas">mhausenblas</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a id="dploy" class="anchor" href="#dploy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy</h1>
+
+<p>dploy the DC/OS deployment tool for appops.</p>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<ul>
+<li><a href="https://dcos.io/releases/1.7.0/">DC/OS 1.7</a></li>
+<li>
+<a href="https://github.com/gambol99/go-marathon">github.com/gambol99/go-marathon</a>, an API library for working with Marathon.</li>
+<li>
+<a href="https://github.com/Sirupsen/logrus">github.com/Sirupsen/logrus</a>, a logging library.</li>
+</ul>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>From source:</p>
+
+<pre><code>$ go get github.com/mhausenblas/dploy
+$ go build
+</code></pre>
+
+<p>Download binaries:</p>
+
+<pre><code>TBD
+</code></pre>
+
+<p>As a preparation to deal with the JWT Auth, you can simply create an SSH tunnel to the DC/OS Master:</p>
+
+<pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
+</code></pre>
+
+<p>From here on, use <code>http://localhost:8080</code> for the Marathon base URL.</p>
+
+<h3>
+<a id="workflow" class="anchor" href="#workflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Workflow</h3>
+
+<ul>
+<li>
+<code>dploy init</code> … creates a new app for you, that is, a <code>dploy.app</code> file with default values is created in <code>-location</code>
+</li>
+<li>
+<code>dploy dryrun</code> … validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.</li>
+<li>
+<code>kploy run</code>… launches the app using the Marathon API</li>
+<li>
+<code>dploy ls</code> … lists the content of the app, all its resources such as Marathon app specs, etc.</li>
+<li>
+<code>dploy ps</code> … lists runtime properties of the app, such as on which node/port its running, etc.</li>
+<li>
+<code>dploy update</code>… lets you update properties of the app, such as scaling or environment variables</li>
+<li>
+<code>dploy destroy</code>… tears down your app</li>
+<li>
+<code>dploy publish</code> … publishes the app in the DC/OS Universe</li>
+</ul>
+
+<h3>
+<a id="dploy-init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h3>
+
+<h3>
+<a id="dploy-dryrun" class="anchor" href="#dploy-dryrun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy dryrun</h3>
+
+<h3>
+<a id="dploy-run" class="anchor" href="#dploy-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy run</h3>
+
+<h3>
+<a id="dploy-ls" class="anchor" href="#dploy-ls" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy ls</h3>
+
+<h3>
+<a id="dploy-ps" class="anchor" href="#dploy-ps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy ps</h3>
+
+<h3>
+<a id="dploy-update" class="anchor" href="#dploy-update" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy update</h3>
+
+<h3>
+<a id="dploy-destroy" class="anchor" href="#dploy-destroy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy destroy</h3>
+
+<h3>
+<a id="dploy-publish" class="anchor" href="#dploy-publish" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy publish</h3>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
