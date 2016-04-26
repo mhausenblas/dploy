@@ -57,7 +57,7 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
-// Init creates an app descriptor (dploy.app) in the location specifies.
+// Init creates an app descriptor (dploy.app) in the location specified.
 // If no location is provided the app descriptor is created in the current directory.
 // If a location is provided, it can be absolute or relative to the dir dploy is executed.
 // For example:
