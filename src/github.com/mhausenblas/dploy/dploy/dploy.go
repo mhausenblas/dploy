@@ -3,8 +3,15 @@ package dploy
 import (
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
+	yaml "gopkg.in/yaml.v2"
 	"net/url"
+	"os"
 )
+
+type DployApp struct {
+	MarathonUL string `yaml:"marathon_url"`
+	AppName    string `yaml:"app_name"`
+}
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
 	config := marathon.NewDefaultConfig()
@@ -36,6 +43,20 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 
 func Init(location string) {
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
+	appDescriptor := DployApp{}
+	d, err := yaml.Marshal(&appDescriptor)
+	if err != nil {
+		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
+	}
+	log.SetLevel(log.DebugLevel)
+	log.WithFields(nil).Debug("dploy.app:\n", string(d))
+	f, err := os.Create("dploy.app")
+	if err != nil {
+		panic(err)
+	}
+	bytesWritten, err := f.WriteString(string(d))
+	f.Sync()
+	log.WithFields(nil).Debug("Created dploy.app, ", bytesWritten, "")
 }
 
 func DryRun() {
