@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -56,6 +57,12 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
+// Init creates an app descriptor (dploy.app) in the location specifies.
+// If no location is provided the app descriptor is created in the current directory.
+// If a location is provided, it can be absolute or relative to the dir dploy is executed.
+// For example:
+//  dploy.Init("../.")
+//  dploy.Init("/Users/mhausenblas/")
 func Init(location string) {
 	withDebug()
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
@@ -67,7 +74,12 @@ func Init(location string) {
 		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
 	}
 	log.WithFields(nil).Debug("Creating app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
-	f, err := os.Create(APP_DESCRIPTOR_FILENAME)
+
+	if location == "" {
+		location = "./"
+	}
+	appDescriptorLocation, _ := filepath.Abs(filepath.Join(location, APP_DESCRIPTOR_FILENAME))
+	f, err := os.Create(appDescriptorLocation)
 	if err != nil {
 		panic(err)
 	}
@@ -76,6 +88,7 @@ func Init(location string) {
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", APP_DESCRIPTOR_FILENAME, ", ", bytesWritten, " Bytes written to disk.")
 }
 
+// DryRun validates the app descriptor by checking if Marathon is reachable.
 func DryRun() {
 	withDebug()
 	log.WithFields(nil).Debug("Trying to read app descriptor ", APP_DESCRIPTOR_FILENAME)

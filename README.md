@@ -36,4 +36,4 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 - `dploy destroy`… tears down your app
 - `dploy publish` … publishes the app in the DC/OS Universe
 
-Note: if you want to run `dploy` in debug mode, use the environment variable `DPLOY_DEBUG`. For example, to set it globally use `export DPLOY_DEBUG=true` or enable debug output on a per-run basis, you can use `DPLOY_DEBUG=true dploy dryrun`.
+Note: if you want to run `dploy` in debug mode, use the environment variable `DPLOY_DEBUG`. For example, to set it globally use `export DPLOY_DEBUG=true` or to enable debug output on a per-run basis, you can use `DPLOY_DEBUG=true dploy dryrun`.
