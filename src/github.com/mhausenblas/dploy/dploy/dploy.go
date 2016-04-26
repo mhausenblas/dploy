@@ -4,13 +4,20 @@ import (
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
 	yaml "gopkg.in/yaml.v2"
+	"io/ioutil"
 	"net/url"
 	"os"
 )
 
+const (
+	APP_DESCRIPTOR_FILENAME string = "dploy.app"
+	DEFAULT_MARATHON_URL    string = "http://localhost:8080"
+	DEFAULT_APP_NAME        string = "CHANGEME"
+)
+
 type DployApp struct {
-	MarathonUL string `yaml:"marathon_url"`
-	AppName    string `yaml:"app_name"`
+	MarathonURL string `yaml:"marathon_url"`
+	AppName     string `yaml:"app_name"`
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -44,23 +51,34 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 func Init(location string) {
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
 	appDescriptor := DployApp{}
+	appDescriptor.MarathonURL = DEFAULT_MARATHON_URL
+	appDescriptor.AppName = DEFAULT_APP_NAME
 	d, err := yaml.Marshal(&appDescriptor)
 	if err != nil {
 		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
 	}
 	log.SetLevel(log.DebugLevel)
-	log.WithFields(nil).Debug("dploy.app:\n", string(d))
-	f, err := os.Create("dploy.app")
+	log.WithFields(nil).Debug(APP_DESCRIPTOR_FILENAME, "\n", string(d))
+	f, err := os.Create(APP_DESCRIPTOR_FILENAME)
 	if err != nil {
 		panic(err)
 	}
 	bytesWritten, err := f.WriteString(string(d))
 	f.Sync()
-	log.WithFields(nil).Debug("Created dploy.app, ", bytesWritten, "")
+	log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", APP_DESCRIPTOR_FILENAME, ", ", bytesWritten, " Bytes written to disk.")
 }
 
 func DryRun() {
-	marathonURL, err := url.Parse("http://localhost:8080")
+	d, err := ioutil.ReadFile(APP_DESCRIPTOR_FILENAME)
+	if err != nil {
+		log.Fatalf("Failed to read app descriptor. Error: %v", err)
+	}
+	appDescriptor := DployApp{}
+	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
+	if uerr != nil {
+		log.Fatalf("error: %v", err)
+	}
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,8 +88,4 @@ func DryRun() {
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" name: ", info.Name)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" version: ", info.Version)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" leader: ", info.Leader)
-
-	// for _, application := range applications.Apps {
-	// 	fmt.Printf("Application: %s", application)
-	// }
 }
