@@ -10,7 +10,6 @@ import (
 var version = "0.2.0"
 var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
-var verboseInitFlag = initCmd.Bool("v", false, "Print detailed information while initializing the new DC/OS app.")
 
 func usage() {
 	fmt.Println("Usage: dploy <command> [<args>]\n")

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"strconv"
 )
 
 const (
@@ -30,6 +31,13 @@ func marathonClient(marathonURL url.URL) marathon.Marathon {
 	return client
 }
 
+func withDebug() {
+	doDebug, _ := strconv.ParseBool(os.Getenv("DPLOY_DEBUG"))
+	if doDebug {
+		log.SetLevel(log.DebugLevel)
+	}
+}
+
 func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	client := marathonClient(marathonURL)
 	applications, err := client.Applications(url.Values{})
@@ -49,6 +57,7 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 }
 
 func Init(location string) {
+	withDebug()
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
 	appDescriptor := DployApp{}
 	appDescriptor.MarathonURL = DEFAULT_MARATHON_URL
@@ -57,8 +66,7 @@ func Init(location string) {
 	if err != nil {
 		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
 	}
-	log.SetLevel(log.DebugLevel)
-	log.WithFields(nil).Debug(APP_DESCRIPTOR_FILENAME, "\n", string(d))
+	log.WithFields(nil).Debug("Creating app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
 	f, err := os.Create(APP_DESCRIPTOR_FILENAME)
 	if err != nil {
 		panic(err)
@@ -69,6 +77,8 @@ func Init(location string) {
 }
 
 func DryRun() {
+	withDebug()
+	log.WithFields(nil).Debug("Trying to read app descriptor ", APP_DESCRIPTOR_FILENAME)
 	d, err := ioutil.ReadFile(APP_DESCRIPTOR_FILENAME)
 	if err != nil {
 		log.Fatalf("Failed to read app descriptor. Error: %v", err)
@@ -83,7 +93,7 @@ func DryRun() {
 		log.Fatal(err)
 	}
 	info := marathonGetInfo(*marathonURL)
-	log.SetLevel(log.DebugLevel)
+
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info("Found DC/OS Marathon instance")
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" name: ", info.Name)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" version: ", info.Version)
