@@ -36,27 +36,11 @@
         <h1>
 <a id="dploy" class="anchor" href="#dploy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy</h1>
 <p>
- If you are in an appops role and want to run microservices in a simple and convenient way, <code>dploy</code> might be something for you.
- Essentially, <code>dploy</code> allows you to create, deploy and manage apps based on a collection of <a href="https://mesosphere.github.io/marathon/docs/">Marathon</a>
- app specs written in JSON. To set up and manage your app across the entire lifecycle, we use convention over configuration, for example the location of resources.
+ If you are in an appops role and want to run microservices on <a href="https://dcos.io" target="_new">DC/OS</a> in a simple and convenient way, <code>dploy</code> might be something for you. Essentially, <code>dploy</code> allows you to create, deploy and manage apps based on a collection of <a href="https://mesosphere.github.io/marathon/docs/" target="_new">Marathon</a> app specs written in JSON. To set up and manage your app across the entire lifecycle, we use convention over configuration, for example the location of resources.
 </p>
 
 <h2>
-<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dependencies</h2>
-
-<ul>
-<li><a href="https://dcos.io/releases/1.7.0/">DC/OS 1.7</a></li>
-<li>
-<a href="https://github.com/gambol99/go-marathon">github.com/gambol99/go-marathon</a>, an API library for working with Marathon.</li>
-<li>
-<a href="https://github.com/Sirupsen/logrus">github.com/Sirupsen/logrus</a>, a logging library.</li>
-</ul>
-
-<h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
-
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>From source:</p>
 
@@ -64,34 +48,27 @@
 $ go build
 </code></pre>
 
-<p>Download binaries:</p>
+<p>Download binaries: TBD</p>
 
-<pre><code>TBD
-</code></pre>
+<p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS oauth</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:</p>
+<pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N</code></pre>
 
-<p>As a preparation to deal with the JWT Auth, you can simply create an SSH tunnel to the DC/OS Master:</p>
+<p>From here on, you can use <code>http://localhost:8080</code> for the Marathon URL (<code>marathon_url</code>) in the <code>dploy.app</code> file.</p>
 
-<pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
-</code></pre>
-
-<p>From here on, use <code>http://localhost:8080</code> for the Marathon base URL.</p>
-
-<h3>
-<a id="workflow" class="anchor" href="#workflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Workflow</h3>
+<h2>
+<a id="workflow" class="anchor" href="#workflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Workflow</h2>
 <h3>
 <a id="init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h3>
 <p>
-<code>dploy init</code> creates a new app for you, that is, a <code>dploy.app</code> file with default values is created in <code>-location</code>
+    This command creates an app descriptor <code>dploy.app</code>. If no location is provided, the app descriptor is created in the current directory and if a location is provided, it can be absolute or relative to the dir dploy is executed:
 </p>
+<pre><code>$ dploy init # dploy.app is created in the current dir</code></pre>
+<pre><code>$ dploy init -location=../. # dploy.app is created in the parent dir</code></pre>
+<pre><code>$ dploy init -location=/tmp/ # dploy.app is created in /tmp</code></pre>
 <h3>
 <a id="dryrun" class="anchor" href="#dploy-dryrun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy dryrun</h3>
 <p>
-<code>dploy dryrun</code> validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.
-</p>
-<h3>
-<a id="run" class="anchor" href="#dploy-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy run</h3>
-<p>
- <code>dploy run</code> launches the app using the Marathon API
+<code>dploy dryrun</code> validates the app descriptor by checking if Marathon is reachable.
 </p>
       </section>
       <footer>
