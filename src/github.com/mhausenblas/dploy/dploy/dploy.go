@@ -154,6 +154,15 @@ func DryRun() {
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" name: ", info.Name)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" version: ", info.Version)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" leader: ", info.Leader)
-	fmt.Printf("🙌\tFound an app descriptor and an app spec\n")
+
+	specsDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
+	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
+		fmt.Printf("🙁\tDidn't find app spec dir, expecting it in %s\n", specsDir)
+		fmt.Printf("➡️\tDid you do `dploy init` here?\n")
+		os.Exit(3)
+	} else {
+		fmt.Printf("🙌\tFound an app descriptor and an app spec\n")
+	}
+
 	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
 }
