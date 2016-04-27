@@ -1,0 +1,22 @@
+{
+    "id": "helloworld",
+    "cmd": "env >index.html && python3 -m http.server 8080",
+    "cpus": 0.1,
+    "mem": 32,
+    "container": {
+        "type": "DOCKER",
+        "docker": {
+            "image": "python:3",
+            "network": "BRIDGE",
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 0
+                }
+            ]
+        }
+    },
+    "acceptedResourceRoles": [
+        "slave_public"
+    ]
+}

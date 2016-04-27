@@ -90,9 +90,14 @@ func Init(location string) {
 	bytesWritten, err := f.WriteString(string(d))
 	f.Sync()
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", APP_DESCRIPTOR_FILENAME, ", ", bytesWritten, " Bytes written to disk.")
+	specsDir, _ := filepath.Abs(filepath.Join(location, MARATHON_APP_SPEC_DIR))
+	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
+		os.Mkdir(specsDir, 755)
+		log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", specsDir)
+	}
 	fmt.Printf("🙌\tDone initializing your app:\n")
 	fmt.Printf(" set up app descriptor in %s\n", appDescriptorLocation)
-	fmt.Printf(" created app spec directory %s\n", MARATHON_APP_SPEC_DIR)
+	fmt.Printf(" created app spec directory %s\n", specsDir)
 	fmt.Printf("➡️\tNow it's time to edit the app descriptor, create Marathon app specs and next you can run `dploy dryrun` …\n")
 }
 
