@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var version = "0.2.0"
+var version = "0.3.0"
 var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
 
@@ -16,6 +16,7 @@ func usage() {
 	fmt.Println("Available commands:")
 	fmt.Println(" init ... creates a new app for you, that is, a `dploy.app` file with default values is created in -location")
 	fmt.Println(" dryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
+	fmt.Println(" run ... launches the app using `dploy.app` and the content of `specs/`")
 }
 
 func main() {
