@@ -29,7 +29,7 @@
         <div><a href="#destroy">destroy</a></div>
         <div><a href="#publish">publish</a></div>
         
-        <p>Version: 0.2</p>
+        <p>Version: 0.3</p>
 
       </header>
       <section>
@@ -60,15 +60,42 @@ $ go build
 <h3>
 <a id="init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h3>
 <p>
-    This command creates an app descriptor <code>dploy.app</code>. If no location is provided, the app descriptor is created in the current directory and if a location is provided, it can be absolute or relative to the dir dploy is executed:
+    This command creates an app descriptor <code>dploy.app</code>.  
 </p>
-<pre><code>$ dploy init # dploy.app is created in the current dir</code></pre>
-<pre><code>$ dploy init -location=../. # dploy.app is created in the parent dir</code></pre>
-<pre><code>$ dploy init -location=/tmp/ # dploy.app is created in /tmp</code></pre>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy init [-location=DIR]</code></pre>
+<p>With the following optional parameter:</p>
+<ul>
+    <li>If <code>-location</code> is not present, <code>dploy.app</code> is created in the current dir</li>
+    <li>If <code>-location</code> is present, you can specify its value <code>DIR</code> either absolute (e.g., <code>/tmp/</code>) or relative to the directory <code>dploy</code> is executed, for example, <code>../.</code> means create <code>dploy.app</code> in the parent dir</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code>$ dploy init
+This is dploy version 0.2.0
+🙌	Done initializing your app:
+ I set up app descriptor in /Users/mhausenblas/Documents/repos/mhausenblas/dploy/dploy.app
+ I created app spec directory /Users/mhausenblas/Documents/repos/mhausenblas/dploy/specs
+ I initialized app spec directory with helloworld.json
+➡️	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+</code></pre>
 <h3>
 <a id="dryrun" class="anchor" href="#dploy-dryrun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy dryrun</h3>
 <p>
-<code>dploy dryrun</code> validates the app descriptor by checking if Marathon is reachable.
+    This command validates the app descriptor by checking if Marathon is reachable and also checks if the app spec directory is present, incl. at least one Marathon app spec.
+</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy dryrun</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code>$ dploy dryrun
+This is dploy version 0.2.0
+🙌	Found DC/OS Marathon instance
+🙌	Found an app descriptor and an app spec
+➡️	Now you can launch your app using `dploy run`
+</code></pre>
+<h3>
+<a id="run" class="anchor" href="#dploy-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy run</h3>
+<p>
+    This command launches the app specs found in <code>specs/</code> through the Marathon API.
 </p>
       </section>
       <footer>
