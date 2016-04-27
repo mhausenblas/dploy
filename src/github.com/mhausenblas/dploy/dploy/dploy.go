@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -29,10 +28,15 @@ type DployApp struct {
 	AppName     string `yaml:"app_name"`
 }
 
-func withDebug() {
-	doDebug, _ := strconv.ParseBool(os.Getenv("DPLOY_DEBUG"))
-	if doDebug {
+func setLogLevel() {
+	logLevel := os.Getenv("DPLOY_LOGLEVEL")
+	switch strings.ToLower(logLevel) {
+	case "debug":
 		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	default:
+		log.SetLevel(log.ErrorLevel)
 	}
 }
 
@@ -98,7 +102,7 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 //  dploy.Init("../.")
 //  dploy.Init("/Users/mhausenblas/")
 func Init(location string) {
-	withDebug()
+	setLogLevel()
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
 	appDescriptor := DployApp{}
 	appDescriptor.MarathonURL = DEFAULT_MARATHON_URL
@@ -122,14 +126,15 @@ func Init(location string) {
 	templateFileName, templateContent := getTemplate(*templateURL)
 	writeData(filepath.Join(specsDir, templateFileName), templateContent)
 	fmt.Printf("🙌\tDone initializing your app:\n")
-	fmt.Printf(" set up app descriptor in %s\n", appDescriptorLocation)
-	fmt.Printf(" created app spec directory %s\n", specsDir)
-	fmt.Printf("➡️\tNow it's time to edit the app descriptor, create Marathon app specs and next you can run `dploy dryrun` …\n")
+	fmt.Printf(" I set up app descriptor in %s\n", appDescriptorLocation)
+	fmt.Printf(" I created app spec directory %s\n", specsDir)
+	fmt.Printf(" I initialized app spec directory with %s\n", templateFileName)
+	fmt.Printf("➡️\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n")
 }
 
 // DryRun validates the app descriptor by checking if Marathon is reachable.
 func DryRun() {
-	withDebug()
+	setLogLevel()
 	log.WithFields(nil).Debug("Trying to read app descriptor ", APP_DESCRIPTOR_FILENAME)
 	d, err := ioutil.ReadFile(APP_DESCRIPTOR_FILENAME)
 	if err != nil {
@@ -145,9 +150,10 @@ func DryRun() {
 		log.Fatal(err)
 	}
 	info := marathonGetInfo(*marathonURL)
-
-	log.WithFields(log.Fields{"cmd": "dryrun"}).Info("Found DC/OS Marathon instance")
-	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" name: ", info.Name)
-	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" version: ", info.Version)
-	log.WithFields(log.Fields{"cmd": "dryrun"}).Debug(" leader: ", info.Leader)
+	fmt.Printf("🙌\tFound DC/OS Marathon instance\n")
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" name: ", info.Name)
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" version: ", info.Version)
+	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" leader: ", info.Leader)
+	fmt.Printf("🙌\tFound an app descriptor and an app spec\n")
+	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
 }

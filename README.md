@@ -36,6 +36,6 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 - `dploy destroy`… tears down your app
 - `dploy publish` … publishes the app in the DC/OS Universe
 
-Note: if you want to run `dploy` in debug mode, use the environment variable `DPLOY_DEBUG`. For example, to set it globally use `export DPLOY_DEBUG=true` or to enable debug output on a per-run basis, you can use `DPLOY_DEBUG=true dploy dryrun`.
+To set the log level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`. Note that the default value for `DPLOY_LOGLEVEL` is `error` (that is, if you don't set the environment variable).
 
 To view the Go package doc locally, you can use the following command (assuming you've set `GO_PATH` to the directory where you've cloned this Git repo): `godoc -http=":6060" -goroot="/usr/local/go"`
