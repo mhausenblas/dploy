@@ -1,6 +1,7 @@
 package dploy
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
 	yaml "gopkg.in/yaml.v2"
@@ -15,6 +16,7 @@ const (
 	APP_DESCRIPTOR_FILENAME string = "dploy.app"
 	DEFAULT_MARATHON_URL    string = "http://localhost:8080"
 	DEFAULT_APP_NAME        string = "CHANGEME"
+	MARATHON_APP_SPEC_DIR   string = "specs/"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -75,7 +77,7 @@ func Init(location string) {
 	if err != nil {
 		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
 	}
-	log.WithFields(nil).Debug("Creating app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
+	log.WithFields(nil).Debug("Trying to create app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
 
 	if location == "" {
 		location = "./"
@@ -88,6 +90,10 @@ func Init(location string) {
 	bytesWritten, err := f.WriteString(string(d))
 	f.Sync()
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", APP_DESCRIPTOR_FILENAME, ", ", bytesWritten, " Bytes written to disk.")
+	fmt.Printf("🙌\tDone initializing your app:\n")
+	fmt.Printf(" set up app descriptor in %s\n", appDescriptorLocation)
+	fmt.Printf(" created app spec directory %s\n", MARATHON_APP_SPEC_DIR)
+	fmt.Printf("➡️\tNow it's time to edit the app descriptor, create Marathon app specs and next you can run `dploy dryrun` …\n")
 }
 
 // DryRun validates the app descriptor by checking if Marathon is reachable.
