@@ -32,6 +32,8 @@ func main() {
 		}
 	case "dryrun":
 		dploy.DryRun()
+	case "run":
+		dploy.Run()
 	default:
 		fmt.Printf("%q is not a valid command\n", os.Args[1])
 		usage()

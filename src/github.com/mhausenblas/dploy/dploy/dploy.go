@@ -3,14 +3,10 @@ package dploy
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	marathon "github.com/gambol99/go-marathon"
 	yaml "gopkg.in/yaml.v2"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 const (
@@ -26,73 +22,6 @@ const (
 type DployApp struct {
 	MarathonURL string `yaml:"marathon_url"`
 	AppName     string `yaml:"app_name"`
-}
-
-func setLogLevel() {
-	logLevel := os.Getenv("DPLOY_LOGLEVEL")
-	switch strings.ToLower(logLevel) {
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	default:
-		log.SetLevel(log.ErrorLevel)
-	}
-}
-
-func writeData(fileName string, data string) {
-	f, err := os.Create(fileName)
-	if err != nil {
-		log.WithFields(log.Fields{"template": "download"}).Error("Can't create ", fileName, " due to ", err)
-	}
-	bytesWritten, err := f.WriteString(data)
-	f.Sync()
-	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
-}
-
-func getTemplate(templateURL url.URL) (string, string) {
-	response, err := http.Get(templateURL.String())
-	templateFilePath := strings.Split(templateURL.Path, "/")
-	templateFileName := templateFilePath[len(templateFilePath)-1]
-	if err != nil {
-		log.WithFields(log.Fields{"template": "download"}).Error("Can't download template ", templateURL.String(), "due to ", err)
-		return templateFileName, ""
-	} else {
-		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			log.WithFields(log.Fields{"template": "read"}).Error("Can't read template content due to ", err)
-		}
-		return templateFileName, string(contents)
-	}
-}
-
-func marathonClient(marathonURL url.URL) marathon.Marathon {
-	config := marathon.NewDefaultConfig()
-	config.URL = marathonURL.String()
-	client, err := marathon.NewClient(config)
-	if err != nil {
-		log.Fatalf("Failed to create a client for Marathon. Error: %s", err)
-	}
-	return client
-}
-
-func marathonGetApps(marathonURL url.URL) *marathon.Applications {
-	client := marathonClient(marathonURL)
-	applications, err := client.Applications(url.Values{})
-	if err != nil {
-		log.Fatalf("Failed to list Marathon apps. Error: %s", err)
-	}
-	return applications
-}
-
-func marathonGetInfo(marathonURL url.URL) *marathon.Info {
-	client := marathonClient(marathonURL)
-	info, err := client.Info()
-	if err != nil {
-		log.Fatalf("Failed to get Marathon info. Error: %s", err)
-	}
-	return info
 }
 
 // Init creates an app descriptor (dploy.app) in the location specified.
@@ -132,19 +61,11 @@ func Init(location string) {
 	fmt.Printf("➡️\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n")
 }
 
-// DryRun validates the app descriptor by checking if Marathon is reachable.
+// DryRun validates the app descriptor by checking if Marathon is reachable and also
+// checks if the app spec directory is present, incl. at least one Marathon app spec.
 func DryRun() {
 	setLogLevel()
-	log.WithFields(nil).Debug("Trying to read app descriptor ", APP_DESCRIPTOR_FILENAME)
-	d, err := ioutil.ReadFile(APP_DESCRIPTOR_FILENAME)
-	if err != nil {
-		log.Fatalf("Failed to read app descriptor. Error: %v", err)
-	}
-	appDescriptor := DployApp{}
-	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
-	if uerr != nil {
-		log.Fatalf("error: %v", err)
-	}
+	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.Fatal(err)
@@ -165,4 +86,15 @@ func DryRun() {
 	}
 
 	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
+}
+
+// Run launches the app using the Marathon API
+func Run() {
+	appDescriptor := readAppDescriptor()
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	apps := marathonLaunchApps(*marathonURL)
+	fmt.Printf("🙌\tLaunched %s\n", apps)
 }
