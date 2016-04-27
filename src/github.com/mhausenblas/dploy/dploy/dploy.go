@@ -6,10 +6,12 @@ import (
 	marathon "github.com/gambol99/go-marathon"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -17,6 +19,7 @@ const (
 	DEFAULT_MARATHON_URL    string = "http://localhost:8080"
 	DEFAULT_APP_NAME        string = "CHANGEME"
 	MARATHON_APP_SPEC_DIR   string = "specs/"
+	TEMPLATE_HELLO_WORLD    string = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -24,6 +27,40 @@ const (
 type DployApp struct {
 	MarathonURL string `yaml:"marathon_url"`
 	AppName     string `yaml:"app_name"`
+}
+
+func withDebug() {
+	doDebug, _ := strconv.ParseBool(os.Getenv("DPLOY_DEBUG"))
+	if doDebug {
+		log.SetLevel(log.DebugLevel)
+	}
+}
+
+func writeData(fileName string, data string) {
+	f, err := os.Create(fileName)
+	if err != nil {
+		log.WithFields(log.Fields{"template": "download"}).Error("Can't create ", fileName, " due to ", err)
+	}
+	bytesWritten, err := f.WriteString(data)
+	f.Sync()
+	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
+}
+
+func getTemplate(templateURL url.URL) (string, string) {
+	response, err := http.Get(templateURL.String())
+	templateFilePath := strings.Split(templateURL.Path, "/")
+	templateFileName := templateFilePath[len(templateFilePath)-1]
+	if err != nil {
+		log.WithFields(log.Fields{"template": "download"}).Error("Can't download template ", templateURL.String(), "due to ", err)
+		return templateFileName, ""
+	} else {
+		defer response.Body.Close()
+		contents, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			log.WithFields(log.Fields{"template": "read"}).Error("Can't read template content due to ", err)
+		}
+		return templateFileName, string(contents)
+	}
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -34,13 +71,6 @@ func marathonClient(marathonURL url.URL) marathon.Marathon {
 		log.Fatalf("Failed to create a client for Marathon. Error: %s", err)
 	}
 	return client
-}
-
-func withDebug() {
-	doDebug, _ := strconv.ParseBool(os.Getenv("DPLOY_DEBUG"))
-	if doDebug {
-		log.SetLevel(log.DebugLevel)
-	}
 }
 
 func marathonGetApps(marathonURL url.URL) *marathon.Applications {
@@ -78,23 +108,19 @@ func Init(location string) {
 		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
 	}
 	log.WithFields(nil).Debug("Trying to create app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
-
 	if location == "" {
 		location = "./"
 	}
 	appDescriptorLocation, _ := filepath.Abs(filepath.Join(location, APP_DESCRIPTOR_FILENAME))
-	f, err := os.Create(appDescriptorLocation)
-	if err != nil {
-		panic(err)
-	}
-	bytesWritten, err := f.WriteString(string(d))
-	f.Sync()
-	log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", APP_DESCRIPTOR_FILENAME, ", ", bytesWritten, " Bytes written to disk.")
+	writeData(appDescriptorLocation, string(d))
 	specsDir, _ := filepath.Abs(filepath.Join(location, MARATHON_APP_SPEC_DIR))
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
-		os.Mkdir(specsDir, 755)
+		os.Mkdir(specsDir, 0755)
 		log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", specsDir)
 	}
+	templateURL, err := url.Parse(TEMPLATE_HELLO_WORLD)
+	templateFileName, templateContent := getTemplate(*templateURL)
+	writeData(filepath.Join(specsDir, templateFileName), templateContent)
 	fmt.Printf("🙌\tDone initializing your app:\n")
 	fmt.Printf(" set up app descriptor in %s\n", appDescriptorLocation)
 	fmt.Printf(" created app spec directory %s\n", specsDir)
