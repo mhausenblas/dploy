@@ -83,6 +83,7 @@ func DryRun() {
 		os.Exit(3)
 	} else {
 		fmt.Printf("🙌\tFound an app descriptor and an app spec\n")
+		// TODO: iterate over app specs, try reading them via readAppSpec() and check against missing values
 	}
 
 	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
@@ -90,6 +91,7 @@ func DryRun() {
 
 // Run launches the app using the Marathon API
 func Run() {
+	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {

@@ -1,6 +1,7 @@
 package dploy
 
 import (
+	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
 	yaml "gopkg.in/yaml.v2"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -64,9 +66,23 @@ func readAppDescriptor() DployApp {
 	appDescriptor := DployApp{}
 	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
 	if uerr != nil {
-		log.Fatalf("Failed to de-serialize app descriptor due to %v", err)
+		log.Fatalf("Failed to de-serialize app descriptor due to %v", uerr)
 	}
 	return appDescriptor
+}
+
+func readAppSpec(appSpecFilename string) *marathon.Application {
+	d, err := ioutil.ReadFile(appSpecFilename)
+	if err != nil {
+		log.WithFields(log.Fields{"marathon": "read_app_spec"}).Error("Can't read app spec ", appSpecFilename)
+	}
+	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("App spec:\n", string(d))
+	app := marathon.Application{}
+	uerr := json.Unmarshal([]byte(d), &app)
+	if uerr != nil {
+		log.Fatalf("Failed to de-serialize app spec due to %v", uerr)
+	}
+	return &app
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -99,25 +115,11 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 
 func marathonLaunchApps(marathonURL url.URL) string {
 	client := marathonClient(marathonURL)
-	applicationName := "helloworld"
-	cmd := "env >index.html && python3 -m http.server 8080"
-	containerPort := 8080
-	resourceRoles := []string{"slave_public"}
-
-	app := marathon.NewDockerApplication()
-	app.
-		Name(applicationName).
-		CPU(0.1).
-		Memory(32).
-		Count(1).
-		Command(cmd).
-		Container.Docker.Container("python:3").
-		Bridged().
-		Expose(containerPort)
-	app.AcceptedResourceRoles = resourceRoles
-
-	app, err := client.CreateApplication(app)
-	client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+	specsDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
+	specFilename, _ := filepath.Abs(filepath.Join(specsDir, "helloworld.json"))
+	appSpec := readAppSpec(specFilename)
+	app, err := client.CreateApplication(appSpec)
+	// client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 
 	if err != nil {
 		log.Fatalf("Failed to create application %s. Error: %s", app, err)
