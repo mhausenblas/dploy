@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var version = "0.3.0"
+var version = "0.4.0"
 var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
 
@@ -41,6 +41,8 @@ func main() {
 		dploy.DryRun()
 	case "run":
 		dploy.Run()
+	case "destroy":
+		dploy.Destroy()
 	default:
 		fmt.Printf("%q is not a valid command\n", os.Args[1])
 		usage()
