@@ -71,12 +71,31 @@ func readAppDescriptor() DployApp {
 	return appDescriptor
 }
 
+func getAppSpecs() []string {
+	appSpecDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
+	log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Trying to find app specs in ", appSpecDir)
+	files, _ := ioutil.ReadDir(appSpecDir)
+	appSpecs := []string{}
+	for _, f := range files {
+		fExt := strings.ToLower(filepath.Ext(f.Name()))
+		log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Testing for app spec: ", f.Name())
+		if !f.IsDir() && (strings.Compare(fExt, MARATHON_APP_SPEC_EXT) == 0) {
+			log.WithFields(log.Fields{"marathon": "get_app_spec"}).Debug("Found app spec ", f.Name())
+			appSpecFilename, _ := filepath.Abs(filepath.Join("./", f.Name()))
+			appSpecs = append(appSpecs, appSpecFilename)
+			log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Added app spec: ", appSpecFilename)
+		}
+	}
+	return appSpecs
+}
+
 func readAppSpec(appSpecFilename string) *marathon.Application {
+	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Trying to read app spec ", appSpecFilename)
 	d, err := ioutil.ReadFile(appSpecFilename)
 	if err != nil {
 		log.WithFields(log.Fields{"marathon": "read_app_spec"}).Error("Can't read app spec ", appSpecFilename)
 	}
-	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("App spec:\n", string(d))
+	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Got app spec:\n", string(d))
 	app := marathon.Application{}
 	uerr := json.Unmarshal([]byte(d), &app)
 	if uerr != nil {
@@ -115,17 +134,17 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 
 func marathonLaunchApps(marathonURL url.URL) string {
 	client := marathonClient(marathonURL)
-	specsDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
-	specFilename, _ := filepath.Abs(filepath.Join(specsDir, "helloworld.json"))
-	appSpec := readAppSpec(specFilename)
-	app, err := client.CreateApplication(appSpec)
-	// client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
-
-	if err != nil {
-		log.Fatalf("Failed to create application %s. Error: %s", app, err)
-	} else {
-		log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app)
+	appSpecs := getAppSpecs()
+	for _, specFilename := range appSpecs {
+		appSpec := readAppSpec(specFilename)
+		app, err := client.CreateApplication(appSpec)
+		// client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+		if err != nil {
+			log.Fatalf("Failed to create application %s. Error: %s", app, err)
+		} else {
+			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app)
+		}
 	}
-
-	return app.String()
+	// return app.String()
+	return "done"
 }
