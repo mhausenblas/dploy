@@ -132,7 +132,7 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	return applications
 }
 
-func marathonLaunchApps(marathonURL url.URL) string {
+func marathonLaunchApps(marathonURL url.URL) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs()
 	for _, specFilename := range appSpecs {
@@ -142,9 +142,8 @@ func marathonLaunchApps(marathonURL url.URL) string {
 		if err != nil {
 			log.Fatalf("Failed to create application %s. Error: %s", app, err)
 		} else {
-			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app)
+			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
+			log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
 		}
 	}
-	// return app.String()
-	return "done"
 }

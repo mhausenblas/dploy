@@ -84,17 +84,18 @@ func DryRun() {
 		fmt.Printf("➡️\tDid you do `dploy init` here?\n")
 		os.Exit(3)
 	} else {
-
 		appDescriptor := readAppDescriptor()
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			fmt.Printf("🙌\tFound an app descriptor\n")
 			if appSpecs := getAppSpecs(); len(appSpecs) > 0 {
-				fmt.Printf("🙌\tFound an app descriptor and app spec(s)\n")
+				fmt.Printf("🙌\tFound %d app spec(s) to deploy\n", len(appSpecs))
 			} else {
-				fmt.Printf("🙁\tDidn't find any app descriptors in %s \n", MARATHON_APP_SPEC_DIR)
+				fmt.Printf("🙁\tDidn't find any app specs in %s \n", MARATHON_APP_SPEC_DIR)
+				os.Exit(3)
 			}
 		} else {
 			fmt.Printf("🙁\tDidn't find an app descriptor (%s) in current directory\n", APP_DESCRIPTOR_FILENAME)
+			os.Exit(3)
 		}
 	}
 
@@ -109,6 +110,6 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	apps := marathonLaunchApps(*marathonURL)
-	fmt.Printf("🙌\tLaunched %s\n", apps)
+	marathonLaunchApps(*marathonURL)
+	fmt.Printf("🙌\tLaunched your app!\n")
 }
