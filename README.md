@@ -1,25 +1,20 @@
 # dploy
 
-dploy, the [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage apps based on a collection of Marathon app specs written in JSON.
+dploy, the [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage microservices-architecture apps based on a collection of Marathon app specs.
 
-<a href="https://asciinema.org/a/44075?autoplay=1"><img src="https://asciinema.org/a/44075.png" /></a>
+<a href="https://asciinema.org/a/44075?autoplay=1" width="800px"><img src="https://asciinema.org/a/44075.png" /></a>
 
 ## Installation
 
 From source:
 
     $ go get github.com/mhausenblas/dploy
-    $ go build
-
-Download binaries:
-
-    TBD
 
 To simplify the [DC/OS oauth](https://dcos.io/docs/1.7/administration/security/) handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:
 
     $ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
 
-From here on, you can use `http://localhost:8080` for the Marathon URL (`marathon_url`) in the `dploy.app` file.
+From here on, you can use `http://localhost:8080` for the `marathon_url` attribute in the `dploy.app` file.
 
 ## Dependencies
 
@@ -42,19 +37,18 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 
 ### Logging
 
-To set the log level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`.
+To set the log output level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`.
 
 Note that the default value for `DPLOY_LOGLEVEL` is `error` (that is, if you don't set the environment variable).
 
 ### Docs
 
-To view the Go package doc locally, do the following:
+To view the `dploy` package docs locally, do the following in your Go workspace:
 
-
+    $ mkdir -p github.com/mhausenblas/ && cd github.com/mhausenblas/
     $ git clone https://github.com/mhausenblas/dploy.git && cd dploy
-    $ export GO_PATH=`pwd`
     $ godoc -http=":6060"
 
-If you now visit [localhost:6060/pkg/github.com/mhausenblas/dploy/dploy/](http://localhost:6060/pkg/github.com/mhausenblas/dploy/dploy/) in your favorite Web browser you should be able to see the `dploy` package docs:
+If you now visit [http://localhost:6060/pkg/github.com/mhausenblas/dploy/lib/](http://localhost:6060/pkg/github.com/mhausenblas/dploy/lib/) in your favorite Web browser you should be able to see the `dploy` package docs:
 
 ![Docs for dploy](img/dploy_godocs.png)

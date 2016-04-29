@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	dploy "github.com/mhausenblas/dploy/dploy"
+	dploy "github.com/mhausenblas/dploy/lib"
 	"os"
 )
 
