@@ -12,11 +12,17 @@ var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
 
 func usage() {
-	fmt.Println("Usage: dploy <command> [<args>]\n")
+	about()
+	fmt.Println("\nUsage: dploy <command> [<args>]\n")
 	fmt.Println("Available commands:")
-	fmt.Println(" init ... creates a new app for you, that is, a `dploy.app` file with default values is created in -location")
-	fmt.Println(" dryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
-	fmt.Println(" run ... launches the app using `dploy.app` and the content of `specs/`")
+	fmt.Println("\tinit ... creates a new app for you, that is, a `dploy.app` file with default values is created in -location")
+	fmt.Println("\tdryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
+	fmt.Println("\trun ... launches the app using `dploy.app` and the content of `specs/`")
+}
+
+func about() {
+	fmt.Printf("This is dploy version %s\n", version)
+	fmt.Println("\tPlease visit http://dploy.sh to learn more, report issues and contribute.")
 }
 
 func main() {
@@ -24,7 +30,7 @@ func main() {
 		usage()
 		os.Exit(1)
 	}
-	fmt.Printf("This is dploy version %s\n", version)
+	about()
 	switch os.Args[1] {
 	case "init":
 		initCmd.Parse(os.Args[2:])
