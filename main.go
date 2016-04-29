@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var version = "0.4.0"
+var version = "0.4.1"
 var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
 
