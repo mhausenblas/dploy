@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>dploy—DC/OS deployments for appops</title>
-
+    <title>dploy: a DC/OS deployment tool for appops</title>
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-light.css">
     <link rel="icon" href="images/dploy.png" type="image/x-icon">
@@ -15,22 +14,20 @@
     <![endif]-->
   </head>
   <body>
-	<a href="https://github.com/mhausenblas/dploy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>  
+	<a href="https://github.com/mhausenblas/dploy"><img style="position: absolute; top: 00; right: 0; border: 0; padding: 0; margin: 0" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
     <div class="wrapper">
       <header>
-        <h1 class="header">dploy</h1>
-        <p>The DC/OS deployment tool for appops</p>
-        <div><a href="#init">init</a></div>
-        <div><a href="#dryrun">dryrun</a></div>
-        <div><a href="#run">run</a></div>
+        <h1 class="header"><a href="">dploy</a></h1>
+        <p>A deployment tool for appops.</p>
+        <div><a class="header" href="#init">init</a></div>
+        <div><a class="header" href="#dryrun">dryrun</a></div>
+        <div><a class="header" href="#run">run</a></div>
+        <div><a class="header" href="#destroy">destroy</a></div>
         <div><a href="#ls">ls</a></div>
         <div><a href="#ps">ps</a></div>
         <div><a href="#update">update</a></div>
-        <div><a href="#destroy">destroy</a></div>
         <div><a href="#publish">publish</a></div>
-        
-        <p>Version: 0.3</p>
-
+        <h2 class="header">Version: 0.4</h2>
       </header>
       <section>
         <h1>
@@ -71,12 +68,13 @@ $ go build
 </ul>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy init
-This is dploy version 0.2.0
+This is dploy version 0.4.0
+	Please visit http://dploy.sh to learn more, report issues and contribute.
 🙌	Done initializing your app:
  I set up app descriptor in /Users/mhausenblas/Documents/repos/mhausenblas/dploy/dploy.app
  I created app spec directory /Users/mhausenblas/Documents/repos/mhausenblas/dploy/specs
  I initialized app spec directory with helloworld.json
-➡️	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
 </code></pre>
 <h3>
 <a id="dryrun" class="anchor" href="#dploy-dryrun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy dryrun</h3>
@@ -87,16 +85,39 @@ This is dploy version 0.2.0
 <pre><code>$ dploy dryrun</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy dryrun
-This is dploy version 0.2.0
+This is dploy version 0.4.0
+	Please visit http://dploy.sh to learn more, report issues and contribute.
 🙌	Found DC/OS Marathon instance
 🙌	Found an app descriptor and an app spec
-➡️	Now you can launch your app using `dploy run`
+🗣	Now you can launch your app using `dploy run`
 </code></pre>
 <h3>
 <a id="run" class="anchor" href="#dploy-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy run</h3>
 <p>
-    This command launches the app specs found in <code>specs/</code> through the Marathon API.
+    This command launches the app as defined in the app descriptor and the app specs. It scans the <code>specs/</code> directory for Marathon app specs and launches them using the Marathon API.
 </p>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy run</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code>$ dploy run
+This is dploy version 0.4.0
+	Please visit http://dploy.sh to learn more, report issues and contribute.
+🙌	Launched your app!
+</code></pre>
+<h3>
+<a id="destroy" class="anchor" href="#dploy-destroy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy destroy</h3>
+<p>
+    This command tears down the app by deleting the Marathon apps based on the app specs found in the <code>specs/</code> directory.
+</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy destroy</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code>$ dploy destroy
+This is dploy version 0.4.0
+	Please visit http://dploy.sh to learn more, report issues and contribute.
+🙌	Destroyed your app!
+</code></pre>
+
       </section>
       <footer>
         <p><small>Maintained by <a href="https://github.com/mhausenblas">mhausenblas</a> and hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
