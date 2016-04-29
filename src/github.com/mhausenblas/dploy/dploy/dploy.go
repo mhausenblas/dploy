@@ -19,7 +19,7 @@ const (
 	TEMPLATE_HELLO_WORLD    string = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
 	USER_MSG_SUCCESS        string = "🙌"
 	USER_MSG_PROBLEM        string = "🙁"
-	USER_MSG_INFO           string = "ℹ️"
+	USER_MSG_INFO           string = "🗣"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
