@@ -2,7 +2,7 @@
 
 dploy, the [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage apps based on a collection of Marathon app specs written in JSON.
 
-<script type="text/javascript" src="https://asciinema.org/a/44075.js" id="asciicast-44075" async></script>
+<a href="https://asciinema.org/a/44075?autoplay=1"><img src="https://asciinema.org/a/44075.png" /></a>
 
 ## Installation
 
