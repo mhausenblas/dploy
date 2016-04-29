@@ -29,27 +29,27 @@ func setLogLevel() {
 func writeData(fileName string, data string) {
 	f, err := os.Create(fileName)
 	if err != nil {
-		log.WithFields(log.Fields{"template": "download"}).Error("Can't create ", fileName, " due to ", err)
+		log.WithFields(log.Fields{"file": "write"}).Error("Can't create ", fileName, " due to ", err)
 	}
 	bytesWritten, err := f.WriteString(data)
 	f.Sync()
 	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
 }
 
-func getTemplate(templateURL url.URL) (string, string) {
-	response, err := http.Get(templateURL.String())
-	templateFilePath := strings.Split(templateURL.Path, "/")
-	templateFileName := templateFilePath[len(templateFilePath)-1]
+func getExample(exampleURL url.URL) (string, string) {
+	response, err := http.Get(exampleURL.String())
+	exampleFilePath := strings.Split(exampleURL.Path, "/")
+	exampleFileName := exampleFilePath[len(exampleFilePath)-1]
 	if err != nil {
-		log.WithFields(log.Fields{"template": "download"}).Error("Can't download template ", templateURL.String(), "due to ", err)
-		return templateFileName, ""
+		log.WithFields(log.Fields{"example": "download"}).Error("Can't download example ", exampleURL.String(), "due to ", err)
+		return exampleFileName, ""
 	} else {
 		defer response.Body.Close()
 		contents, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.WithFields(log.Fields{"template": "read"}).Error("Can't read template content due to ", err)
+			log.WithFields(log.Fields{"example": "read"}).Error("Can't read example content due to ", err)
 		}
-		return templateFileName, string(contents)
+		return exampleFileName, string(contents)
 	}
 }
 

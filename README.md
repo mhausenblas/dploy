@@ -34,9 +34,9 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 - [x] `dploy init` … creates a new app for you, that is, a `dploy.app` file with default values is created in `-location`
 - [x] `dploy dryrun` … validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.
 - [x] `dploy run`… launches your app using the Marathon API
-- [ ] `dploy destroy`… tears down your app
-- [ ] `dploy ls` … lists the content of the app, all its resources such as Marathon app specs, etc.
-- [ ] `dploy ps` … lists runtime properties of the app, such as on which node/port its running, etc.
+- [x] `dploy destroy`… tears down your app using the Marathon API
+- [ ] `dploy ls` … lists the definition of your app (Marathon app specs, other resources)
+- [ ] `dploy ps` … lists runtime properties of the app, such as on which node/port tasks are running
 - [ ] `dploy update`… lets you update properties of the app, such as scaling or environment variables
 - [ ] `dploy publish` … publishes the app in the DC/OS Universe
 

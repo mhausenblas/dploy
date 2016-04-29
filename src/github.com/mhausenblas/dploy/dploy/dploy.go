@@ -18,7 +18,7 @@ const (
 	DEFAULT_APP_NAME         string        = "CHANGEME"
 	MARATHON_APP_SPEC_DIR    string        = "specs/"
 	MARATHON_APP_SPEC_EXT    string        = ".json"
-	TEMPLATE_HELLO_WORLD     string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
+	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
@@ -58,13 +58,13 @@ func Init(location string) {
 		os.Mkdir(specsDir, 0755)
 		log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", specsDir)
 	}
-	templateURL, err := url.Parse(TEMPLATE_HELLO_WORLD)
-	templateFileName, templateContent := getTemplate(*templateURL)
-	writeData(filepath.Join(specsDir, templateFileName), templateContent)
+	exampleURL, err := url.Parse(EXAMPLE_HELLO_WORLD)
+	exampleFileName, exampleContent := getExample(*exampleURL)
+	writeData(filepath.Join(specsDir, exampleFileName), exampleContent)
 	fmt.Printf("%s\tDone initializing your app:\n", USER_MSG_SUCCESS)
 	fmt.Printf(" I set up app descriptor in %s\n", appDescriptorLocation)
 	fmt.Printf(" I created app spec directory %s\n", specsDir)
-	fmt.Printf(" I initialized app spec directory with %s\n", templateFileName)
+	fmt.Printf(" I initialized app spec directory with %s\n", exampleFileName)
 	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n", USER_MSG_INFO)
 }
 
