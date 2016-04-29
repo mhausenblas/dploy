@@ -27,6 +27,8 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 
 ## Workflow
 
+### Commands
+
 - [x] `dploy init` … creates a new app for you, that is, a `dploy.app` file with default values is created in `-location`
 - [x] `dploy dryrun` … validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.
 - [x] `dploy run`… launches the app using the Marathon API
@@ -36,6 +38,21 @@ From here on, you can use `http://localhost:8080` for the Marathon URL (`maratho
 - [ ] `dploy update`… lets you update properties of the app, such as scaling or environment variables
 - [ ] `dploy publish` … publishes the app in the DC/OS Universe
 
-To set the log level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`. Note that the default value for `DPLOY_LOGLEVEL` is `error` (that is, if you don't set the environment variable).
+### Logging
 
-To view the Go package doc locally, you can use the following command (assuming you've set `GO_PATH` to the directory where you've cloned this Git repo): `godoc -http=":6060" -goroot="/usr/local/go"`
+To set the log level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`.
+
+Note that the default value for `DPLOY_LOGLEVEL` is `error` (that is, if you don't set the environment variable).
+
+### Docs
+
+To view the Go package doc locally, do the following:
+
+
+    $ git clone https://github.com/mhausenblas/dploy.git && cd dploy
+    $ export GO_PATH=`pwd`
+    $ godoc -http=":6060"
+
+If you now visit [localhost:6060/pkg/github.com/mhausenblas/dploy/dploy/](http://localhost:6060/pkg/github.com/mhausenblas/dploy/dploy/) in your favorite Web browser you should be able to see the `dploy` package docs:
+
+![Docs for dploy](img/dploy_godocs.png)
