@@ -2,11 +2,7 @@
 
 dploy, the [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage apps based on a collection of Marathon app specs written in JSON.
 
-## Dependencies
-
-- [DC/OS 1.7](https://dcos.io/releases/1.7.0/)
-- [github.com/gambol99/go-marathon](https://github.com/gambol99/go-marathon), an API library for working with Marathon.
-- [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
+<script type="text/javascript" src="https://asciinema.org/a/44075.js" id="asciicast-44075" async></script>
 
 ## Installation
 
@@ -24,6 +20,12 @@ To simplify the [DC/OS oauth](https://dcos.io/docs/1.7/administration/security/)
     $ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
 
 From here on, you can use `http://localhost:8080` for the Marathon URL (`marathon_url`) in the `dploy.app` file.
+
+## Dependencies
+
+- [DC/OS 1.7](https://dcos.io/releases/1.7.0/)
+- [github.com/gambol99/go-marathon](https://github.com/gambol99/go-marathon), an API library for working with Marathon.
+- [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
 
 ## Workflow
 
