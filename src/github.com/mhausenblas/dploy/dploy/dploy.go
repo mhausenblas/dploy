@@ -17,6 +17,9 @@ const (
 	MARATHON_APP_SPEC_DIR   string = "specs/"
 	MARATHON_APP_SPEC_EXT   string = ".json"
 	TEMPLATE_HELLO_WORLD    string = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
+	USER_MSG_SUCCESS        string = "🙌"
+	USER_MSG_PROBLEM        string = "🙁"
+	USER_MSG_INFO           string = "ℹ️"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -56,11 +59,11 @@ func Init(location string) {
 	templateURL, err := url.Parse(TEMPLATE_HELLO_WORLD)
 	templateFileName, templateContent := getTemplate(*templateURL)
 	writeData(filepath.Join(specsDir, templateFileName), templateContent)
-	fmt.Printf("🙌\tDone initializing your app:\n")
+	fmt.Printf("%s\tDone initializing your app:\n", USER_MSG_SUCCESS)
 	fmt.Printf(" I set up app descriptor in %s\n", appDescriptorLocation)
 	fmt.Printf(" I created app spec directory %s\n", specsDir)
 	fmt.Printf(" I initialized app spec directory with %s\n", templateFileName)
-	fmt.Printf("➡️\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n")
+	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n", USER_MSG_INFO)
 }
 
 // DryRun validates the app descriptor by checking if Marathon is reachable and also
@@ -73,36 +76,37 @@ func DryRun() {
 		log.Fatal(err)
 	}
 	info := marathonGetInfo(*marathonURL)
-	fmt.Printf("🙌\tFound DC/OS Marathon instance\n")
+	fmt.Printf("%s\tFound DC/OS Marathon instance\n", USER_MSG_SUCCESS)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" name: ", info.Name)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" version: ", info.Version)
 	log.WithFields(log.Fields{"cmd": "dryrun"}).Info(" leader: ", info.Leader)
 
 	specsDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
-		fmt.Printf("🙁\tDidn't find app spec dir, expecting it in %s\n", specsDir)
-		fmt.Printf("➡️\tDid you do `dploy init` here?\n")
+		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
+		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
 		os.Exit(3)
 	} else {
 		appDescriptor := readAppDescriptor()
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
-			fmt.Printf("🙌\tFound an app descriptor\n")
+			fmt.Printf("%s\tFound an app descriptor\n", USER_MSG_SUCCESS)
 			if appSpecs := getAppSpecs(); len(appSpecs) > 0 {
-				fmt.Printf("🙌\tFound %d app spec(s) to deploy\n", len(appSpecs))
+				fmt.Printf("%s\tFound %d app spec(s) to deploy\n", USER_MSG_SUCCESS, len(appSpecs))
 			} else {
-				fmt.Printf("🙁\tDidn't find any app specs in %s \n", MARATHON_APP_SPEC_DIR)
+				fmt.Printf("%s\tDidn't find any app specs in %s \n", USER_MSG_PROBLEM, MARATHON_APP_SPEC_DIR)
 				os.Exit(3)
 			}
 		} else {
-			fmt.Printf("🙁\tDidn't find an app descriptor (%s) in current directory\n", APP_DESCRIPTOR_FILENAME)
+			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
 			os.Exit(3)
 		}
 	}
 
-	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
+	fmt.Printf("%s\tNow you can launch your app using `dploy run`\n", USER_MSG_INFO)
 }
 
-// Run launches the app using the Marathon API
+// Run launches the app as defined in the descriptor and the app specs.
+// It scans the `specs/` directory for Marathon app specs and launches them using the Marathon API.
 func Run() {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
@@ -111,5 +115,5 @@ func Run() {
 		log.Fatal(err)
 	}
 	marathonLaunchApps(*marathonURL)
-	fmt.Printf("🙌\tLaunched your app!\n")
+	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
 }
