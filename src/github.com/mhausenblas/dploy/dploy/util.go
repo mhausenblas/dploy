@@ -78,10 +78,10 @@ func getAppSpecs() []string {
 	appSpecs := []string{}
 	for _, f := range files {
 		fExt := strings.ToLower(filepath.Ext(f.Name()))
-		log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Testing for app spec: ", f.Name())
+		log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Testing ", f.Name(), " with extension ", fExt)
 		if !f.IsDir() && (strings.Compare(fExt, MARATHON_APP_SPEC_EXT) == 0) {
-			log.WithFields(log.Fields{"marathon": "get_app_spec"}).Debug("Found app spec ", f.Name())
-			appSpecFilename, _ := filepath.Abs(filepath.Join("./", f.Name()))
+			log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Found app spec ", f.Name())
+			appSpecFilename, _ := filepath.Abs(filepath.Join(appSpecDir, f.Name()))
 			appSpecs = append(appSpecs, appSpecFilename)
 			log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Added app spec: ", appSpecFilename)
 		}

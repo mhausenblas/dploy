@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 	DEFAULT_MARATHON_URL    string = "http://localhost:8080"
 	DEFAULT_APP_NAME        string = "CHANGEME"
 	MARATHON_APP_SPEC_DIR   string = "specs/"
-	MARATHON_APP_SPEC_EXT   string = "json"
+	MARATHON_APP_SPEC_EXT   string = ".json"
 	TEMPLATE_HELLO_WORLD    string = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
 )
 
@@ -83,16 +84,18 @@ func DryRun() {
 		fmt.Printf("➡️\tDid you do `dploy init` here?\n")
 		os.Exit(3)
 	} else {
-		appSpecs := getAppSpecs()
-		for _, specFilename := range appSpecs {
-			appSpec := readAppSpec(specFilename)
-			if err != nil {
-				log.Fatalf("Failed to create application %s. Error: %s", appSpec, err)
+
+		appDescriptor := readAppDescriptor()
+		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
+			fmt.Printf("🙌\tFound an app descriptor\n")
+			if appSpecs := getAppSpecs(); len(appSpecs) > 0 {
+				fmt.Printf("🙌\tFound an app descriptor and app spec(s)\n")
 			} else {
-				log.WithFields(log.Fields{"marathon": "read_app"}).Info("Found app spec ", appSpec)
+				fmt.Printf("🙁\tDidn't find any app descriptors in %s \n", MARATHON_APP_SPEC_DIR)
 			}
+		} else {
+			fmt.Printf("🙁\tDidn't find an app descriptor (%s) in current directory\n", APP_DESCRIPTOR_FILENAME)
 		}
-		fmt.Printf("🙌\tFound an app descriptor and app spec(s)\n")
 	}
 
 	fmt.Printf("➡️\tNow you can launch your app using `dploy run`\n")
