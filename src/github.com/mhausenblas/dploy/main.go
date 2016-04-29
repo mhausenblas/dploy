@@ -18,6 +18,7 @@ func usage() {
 	fmt.Println("\tinit ... creates a new app for you, that is, a `dploy.app` file with default values is created in -location")
 	fmt.Println("\tdryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
 	fmt.Println("\trun ... launches the app using `dploy.app` and the content of `specs/`")
+	fmt.Println("\tdestroy ... tears down the app")
 }
 
 func about() {

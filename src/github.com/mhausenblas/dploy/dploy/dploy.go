@@ -8,18 +8,20 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
-	APP_DESCRIPTOR_FILENAME string = "dploy.app"
-	DEFAULT_MARATHON_URL    string = "http://localhost:8080"
-	DEFAULT_APP_NAME        string = "CHANGEME"
-	MARATHON_APP_SPEC_DIR   string = "specs/"
-	MARATHON_APP_SPEC_EXT   string = ".json"
-	TEMPLATE_HELLO_WORLD    string = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
-	USER_MSG_SUCCESS        string = "🙌"
-	USER_MSG_PROBLEM        string = "🙁"
-	USER_MSG_INFO           string = "🗣"
+	DEFAULT_DEPLOY_WAIT_TIME time.Duration = 10
+	APP_DESCRIPTOR_FILENAME  string        = "dploy.app"
+	DEFAULT_MARATHON_URL     string        = "http://localhost:8080"
+	DEFAULT_APP_NAME         string        = "CHANGEME"
+	MARATHON_APP_SPEC_DIR    string        = "specs/"
+	MARATHON_APP_SPEC_EXT    string        = ".json"
+	TEMPLATE_HELLO_WORLD     string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/templates/helloworld.json"
+	USER_MSG_SUCCESS         string        = "🙌"
+	USER_MSG_PROBLEM         string        = "🙁"
+	USER_MSG_INFO            string        = "🗣"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -114,6 +116,18 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	marathonLaunchApps(*marathonURL)
+	marathonCreateApps(*marathonURL)
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
+}
+
+// Destroy tears down the app.
+func Destroy() {
+	setLogLevel()
+	appDescriptor := readAppDescriptor()
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	marathonDeleteApps(*marathonURL)
+	fmt.Printf("%s\tDestroyed your app!\n", USER_MSG_SUCCESS)
 }

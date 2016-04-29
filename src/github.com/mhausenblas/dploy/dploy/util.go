@@ -14,10 +14,6 @@ import (
 	"time"
 )
 
-const (
-	DEFAULT_DEPLOY_WAIT_TIME time.Duration = 10
-)
-
 func setLogLevel() {
 	logLevel := os.Getenv("DPLOY_LOGLEVEL")
 	switch strings.ToLower(logLevel) {
@@ -132,18 +128,33 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	return applications
 }
 
-func marathonLaunchApps(marathonURL url.URL) {
+func marathonCreateApps(marathonURL url.URL) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs()
 	for _, specFilename := range appSpecs {
 		appSpec := readAppSpec(specFilename)
 		app, err := client.CreateApplication(appSpec)
-		// client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+		client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		if err != nil {
 			log.Fatalf("Failed to create application %s. Error: %s", app, err)
 		} else {
 			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
 			log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
+		}
+	}
+}
+
+func marathonDeleteApps(marathonURL url.URL) {
+	client := marathonClient(marathonURL)
+	appSpecs := getAppSpecs()
+	for _, specFilename := range appSpecs {
+		appSpec := readAppSpec(specFilename)
+		_, err := client.DeleteApplication(appSpec.ID)
+		client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+		if err != nil {
+			log.Fatalf("Failed to create application %s. Error: %s", appSpec.ID, err)
+		} else {
+			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Deleted app ", appSpec.ID)
 		}
 	}
 }
