@@ -36,6 +36,8 @@
  If you are in an appops role and want to run microservices on <a href="https://dcos.io" target="_new">DC/OS</a> in a simple and convenient way, <code>dploy</code> might be something for you. Essentially, <code>dploy</code> allows you to create, deploy and manage apps based on a collection of <a href="https://mesosphere.github.io/marathon/docs/" target="_new">Marathon</a> app specs written in JSON. To set up and manage your app across the entire lifecycle, we use convention over configuration, for example the location of resources.
 </p>
 
+<script type="text/javascript" src="https://asciinema.org/a/44075.js" id="asciicast-44075" async></script>
+
 <h2>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
@@ -44,8 +46,6 @@
 <pre><code>$ go get github.com/mhausenblas/dploy
 $ go build
 </code></pre>
-
-<p>Download binaries: TBD</p>
 
 <p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS oauth</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:</p>
 <pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N</code></pre>
