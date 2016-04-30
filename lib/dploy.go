@@ -3,6 +3,7 @@ package dploy
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	tw "github.com/olekukonko/tablewriter"
 	yaml "gopkg.in/yaml.v2"
 	"net/url"
 	"os"
@@ -124,6 +125,7 @@ func Run() {
 }
 
 // Destroy tears down the app.
+// It scans the `specs/` directory for Marathon app specs and deletes apps using the Marathon API.
 func Destroy() {
 	setLogLevel()
 	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
@@ -134,4 +136,33 @@ func Destroy() {
 	}
 	marathonDeleteApps(*marathonURL)
 	fmt.Printf("%s\tDestroyed your app!\n", USER_MSG_SUCCESS)
+}
+
+// ListResources lists the resource definitions of the app.
+func ListResources() {
+	setLogLevel()
+	appDescriptor := readAppDescriptor()
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data := [][]string{
+		[]string{"Marathon", marathonURL.String(), "online"},
+		[]string{"/helloworld", "specs/helloworld.json", "offline"},
+	}
+
+	table := tw.NewWriter(os.Stdout)
+	table.SetHeader([]string{"RESOURCE", "LOCATION", "STATUS"})
+
+	for _, v := range data {
+		table.Append(v)
+	}
+
+	fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetAlignment(tw.ALIGN_LEFT)
+	table.SetHeaderAlignment(tw.ALIGN_LEFT)
+	table.Render()
 }

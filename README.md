@@ -27,6 +27,7 @@ From here on, you can use `http://localhost:8080` for the `marathon_url` attribu
 - [DC/OS 1.7](https://dcos.io/releases/1.7.0/)
 - [github.com/gambol99/go-marathon](https://github.com/gambol99/go-marathon), an API library for working with Marathon.
 - [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
+- [github.com/olekukonko/tablewriter](https://github.com/olekukonko/tablewriter), a ACSII table formatter.
 
 ## Workflow
 

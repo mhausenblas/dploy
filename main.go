@@ -5,9 +5,10 @@ import (
 	"fmt"
 	dploy "github.com/mhausenblas/dploy/lib"
 	"os"
+	"strings"
 )
 
-var version = "0.4.1"
+var version = "0.5.0"
 var initCmd = flag.NewFlagSet("init", flag.ExitOnError)
 var locFlag = initCmd.String("location", ".", "Where to create the new DC/OS app.")
 
@@ -23,7 +24,9 @@ func usage() {
 
 func about() {
 	fmt.Printf("This is dploy version %s\n", version)
-	fmt.Println("\tPlease visit http://dploy.sh to learn more, report issues and contribute.")
+	fmt.Println("\tPlease visit http://dploy.sh to learn more about me,")
+	fmt.Println("\treport issues and also how to contribute to this project.")
+	fmt.Println(strings.Repeat("=", 80))
 }
 
 func main() {
@@ -44,6 +47,8 @@ func main() {
 		dploy.Run()
 	case "destroy":
 		dploy.Destroy()
+	case "ls":
+		dploy.ListResources()
 	default:
 		fmt.Printf("%q is not a valid command\n", os.Args[1])
 		usage()
