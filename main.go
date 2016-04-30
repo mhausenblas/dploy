@@ -20,6 +20,7 @@ func usage() {
 	fmt.Println("\tdryrun ... validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.")
 	fmt.Println("\trun ... launches the app using `dploy.app` and the content of `specs/`")
 	fmt.Println("\tdestroy ... tears down the app")
+	fmt.Println("\tls ... lists the resources of the app")
 }
 
 func about() {
