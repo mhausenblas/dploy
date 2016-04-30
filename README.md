@@ -44,6 +44,7 @@ From here on, you can use `http://localhost:8080` for the `marathon_url` attribu
 
 Additional things planned:
 
+- Expose metrics via `ps -history -json`
 - Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
 - advanced µS examples using linkerd, VAMP
 
