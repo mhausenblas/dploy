@@ -8,7 +8,7 @@ The [DC/OS](https://dcos.io) deployment tool for appops allows you to create, de
 
 Before you dive in, see it in action:
 
-<a href="https://asciinema.org/a/44075?autoplay=1" width="800px"><img src="https://asciinema.org/a/44075.png" /></a>
+<a href="https://asciinema.org/a/44165" width="600px"><img src="https://asciinema.org/a/44165.png" /></a>
 
 ## Installation
 
