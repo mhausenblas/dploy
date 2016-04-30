@@ -1,6 +1,12 @@
 # dploy
 
-dploy, the [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage microservices-architecture apps based on a collection of Marathon app specs.
+The [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage services and apps composed of microservices (µS):
+
+- It is simple: it has 8 commands and that's that.
+- It is stateless: state is exclusively kept in (local) descriptor and spec files (a collection of Marathon app specs).
+- It is self-contained: written in Go, `dploy` is a single binary incl. all dependencies.
+
+Before you dive in, see it in action:
 
 <a href="https://asciinema.org/a/44075?autoplay=1" width="800px"><img src="https://asciinema.org/a/44075.png" /></a>
 
@@ -26,26 +32,35 @@ From here on, you can use `http://localhost:8080` for the `marathon_url` attribu
 
 ### Commands
 
-- [x] `dploy init` … creates a new app for you, that is, a `dploy.app` file with default values is created in `-location`
-- [x] `dploy dryrun` … validates deployment of the app by checking if DC/OS cluster is valid, validates app specs, etc.
-- [x] `dploy run`… launches your app using the Marathon API
-- [x] `dploy destroy`… tears down your app using the Marathon API
-- [ ] `dploy ls` … lists the definition of your app (Marathon app specs, other resources)
-- [ ] `dploy ps` … lists runtime properties of the app, such as on which node/port tasks are running
-- [ ] `dploy update`… lets you update properties of the app, such as scaling or environment variables
-- [ ] `dploy publish` … publishes the app in the DC/OS Universe
+- [x] `dploy init` … creates a new µS-based app for you
+- [x] `dploy dryrun` … validates deployment of the µS-based app
+- [x] `dploy run`… launches the µS-based app using the Marathon API
+- [x] `dploy destroy`… tears down µS-based app using the Marathon API
+- [ ] `dploy ls` … lists the resource definitions of the µS-based app
+- [ ] `dploy ps` … lists runtime properties of the µS-based app
+- [ ] `dploy update`… updates runtime properties of the µS-based app
+- [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe
+
+Additional things planned:
+
+- Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
+- advanced µS examples using linkerd, VAMP
 
 ### Logging
 
-To set the log output level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. For example, to set it globally use `export DPLOY_LOGLEVEL=debug` or to enable debug output on a per-run basis, you can use `DPLOY_LOGLEVEL=info dploy dryrun`.
+To set the log output level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. 
 
-Note that the default value for `DPLOY_LOGLEVEL` is `error` (that is, if you don't set the environment variable).
+For example, to set it globally use:
+
+    $ export DPLOY_LOGLEVEL=debug
+
+Of course, you can also set the log output level on a per-run basis, using `$ DPLOY_LOGLEVEL=info dploy dryrun`. Note that the default value, that is, if you don't set the environment variable, is `DPLOY_LOGLEVEL=error`.
 
 ### Docs
 
 To view the `dploy` package docs locally, do the following in your Go workspace:
 
-    $ mkdir -p github.com/mhausenblas/ && cd github.com/mhausenblas/
+    $ mkdir -p $GOPATH/github.com/mhausenblas/ && cd $GOPATH/github.com/mhausenblas/
     $ git clone https://github.com/mhausenblas/dploy.git && cd dploy
     $ godoc -http=":6060"
 
