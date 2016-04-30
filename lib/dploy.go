@@ -108,7 +108,6 @@ func DryRun() {
 			os.Exit(3)
 		}
 	}
-
 	fmt.Printf("%s\tNow you can launch your app using `dploy run`\n", USER_MSG_INFO)
 }
 
@@ -124,6 +123,7 @@ func Run() {
 	}
 	marathonCreateApps(*marathonURL)
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
+	fmt.Printf("%s\tNow you can use `dploy ls` to list resources or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
 }
 
 // Destroy tears down the app.
