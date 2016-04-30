@@ -37,7 +37,7 @@ From here on, you can use `http://localhost:8080` for the `marathon_url` attribu
 - [x] `dploy dryrun` … validates deployment of the µS-based app
 - [x] `dploy run`… launches the µS-based app using the Marathon API
 - [x] `dploy destroy`… tears down µS-based app using the Marathon API
-- [ ] `dploy ls` … lists the resource definitions of the µS-based app
+- [x] `dploy ls` … lists the resources of the µS-based app
 - [ ] `dploy ps` … lists runtime properties of the µS-based app
 - [ ] `dploy update`… updates runtime properties of the µS-based app
 - [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe

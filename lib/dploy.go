@@ -23,6 +23,8 @@ const (
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
+	SYSTEM_MSG_ONLINE        string        = "💚\tonline"
+	SYSTEM_MSG_OFFLINE       string        = "💔\toffline"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -146,23 +148,39 @@ func ListResources() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	data := [][]string{
-		[]string{"Marathon", marathonURL.String(), "online"},
-		[]string{"/helloworld", "specs/helloworld.json", "offline"},
+	specsDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
+	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
+		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
+		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
+		os.Exit(3)
+	} else {
+		appDescriptor := readAppDescriptor()
+		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
+			table := tw.NewWriter(os.Stdout)
+			row := []string{"Marathon", marathonURL.String(), SYSTEM_MSG_ONLINE}
+			table.Append(row)
+			if appSpecs := getAppSpecs(); len(appSpecs) > 0 {
+				for _, specFilename := range appSpecs {
+					appSpec := readAppSpec(specFilename)
+					appStatus := marathonAppStatus(*marathonURL, appSpec.ID)
+					row := []string{"/" + appSpec.ID, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
+					table.Append(row)
+				}
+				fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
+				table.SetHeader([]string{"RESOURCE", "LOCATION", "STATUS"})
+				table.SetCenterSeparator("")
+				table.SetColumnSeparator("")
+				table.SetRowSeparator("")
+				table.SetAlignment(tw.ALIGN_LEFT)
+				table.SetHeaderAlignment(tw.ALIGN_LEFT)
+				table.Render()
+			} else {
+				fmt.Printf("%s\tDidn't find any app specs in %s \n", USER_MSG_PROBLEM, MARATHON_APP_SPEC_DIR)
+				os.Exit(3)
+			}
+		} else {
+			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
+			os.Exit(3)
+		}
 	}
-
-	table := tw.NewWriter(os.Stdout)
-	table.SetHeader([]string{"RESOURCE", "LOCATION", "STATUS"})
-
-	for _, v := range data {
-		table.Append(v)
-	}
-
-	fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAlignment(tw.ALIGN_LEFT)
-	table.SetHeaderAlignment(tw.ALIGN_LEFT)
-	table.Render()
 }

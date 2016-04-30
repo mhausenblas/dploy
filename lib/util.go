@@ -119,6 +119,27 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
+func marathonAppStatus(marathonURL url.URL, appID string) string {
+	client := marathonClient(marathonURL)
+	details, err := client.Application(appID)
+	if err != nil {
+		log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appID, " not running")
+		return SYSTEM_MSG_OFFLINE
+	} else {
+		if details.Tasks != nil && len(details.Tasks) > 0 {
+			health, _ := client.ApplicationOK(details.ID)
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", details.ID, "health status: ", health)
+			if health {
+				return SYSTEM_MSG_ONLINE
+			} else {
+				return SYSTEM_MSG_OFFLINE
+			}
+		} else {
+			return SYSTEM_MSG_OFFLINE
+		}
+	}
+}
+
 func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	client := marathonClient(marathonURL)
 	applications, err := client.Applications(url.Values{})
