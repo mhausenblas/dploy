@@ -15,6 +15,11 @@ Before you dive in, see it in action:
 From source:
 
     $ go get github.com/mhausenblas/dploy
+    
+Via Docker:
+
+    $ docker create -v /Users/mhausenblas/tmp --name dploy mhausenblas/dploy:0.5.0
+    $ docker run --rm -it --volumes-from dploy mhausenblas/dploy:0.5.0 init
 
 To simplify the [DC/OS oauth](https://dcos.io/docs/1.7/administration/security/) handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:
 
