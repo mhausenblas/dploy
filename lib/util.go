@@ -134,13 +134,14 @@ func marathonCreateApps(marathonURL url.URL) {
 	for _, specFilename := range appSpecs {
 		appSpec := readAppSpec(specFilename)
 		app, err := client.CreateApplication(appSpec)
-		client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		if err != nil {
-			log.Fatalf("Failed to create application %s. Error: %s", app, err)
+			log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create application due to:\n\t", err)
+			log.Fatalf("Exiting for now; try running `dploy destroy` first.")
 		} else {
 			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
 			log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
 		}
+		client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 	}
 }
 
@@ -150,11 +151,11 @@ func marathonDeleteApps(marathonURL url.URL) {
 	for _, specFilename := range appSpecs {
 		appSpec := readAppSpec(specFilename)
 		_, err := client.DeleteApplication(appSpec.ID)
-		client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		if err != nil {
 			log.Fatalf("Failed to create application %s. Error: %s", appSpec.ID, err)
 		} else {
 			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Deleted app ", appSpec.ID)
 		}
+		client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 	}
 }

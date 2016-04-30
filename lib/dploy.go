@@ -39,6 +39,7 @@ type DployApp struct {
 //  dploy.Init("/Users/mhausenblas/")
 func Init(location string) {
 	setLogLevel()
+	fmt.Printf("%s\tInitializing your app ...\n", USER_MSG_INFO)
 	log.WithFields(log.Fields{"cmd": "init"}).Info("Init app in dir: ", location)
 	appDescriptor := DployApp{}
 	appDescriptor.MarathonURL = DEFAULT_MARATHON_URL
@@ -62,9 +63,9 @@ func Init(location string) {
 	exampleFileName, exampleContent := getExample(*exampleURL)
 	writeData(filepath.Join(specsDir, exampleFileName), exampleContent)
 	fmt.Printf("%s\tDone initializing your app:\n", USER_MSG_SUCCESS)
-	fmt.Printf(" I set up app descriptor in %s\n", appDescriptorLocation)
-	fmt.Printf(" I created app spec directory %s\n", specsDir)
-	fmt.Printf(" I initialized app spec directory with %s\n", exampleFileName)
+	fmt.Printf("\t Set up app descriptor in %s\n", appDescriptorLocation)
+	fmt.Printf("\t Created app spec directory %s\n", specsDir)
+	fmt.Printf("\t Initialized app spec directory with %s\n", exampleFileName)
 	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n", USER_MSG_INFO)
 }
 
@@ -72,6 +73,7 @@ func Init(location string) {
 // checks if the app spec directory is present, incl. at least one Marathon app spec.
 func DryRun() {
 	setLogLevel()
+	fmt.Printf("%s\tKicking the tires! Checking Marathon connection, descriptor and app specs ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
@@ -111,6 +113,7 @@ func DryRun() {
 // It scans the `specs/` directory for Marathon app specs and launches them using the Marathon API.
 func Run() {
 	setLogLevel()
+	fmt.Printf("%s\tOK, let's rock and roll! Trying to launch your app ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
@@ -123,6 +126,7 @@ func Run() {
 // Destroy tears down the app.
 func Destroy() {
 	setLogLevel()
+	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
