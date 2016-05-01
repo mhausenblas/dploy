@@ -6,26 +6,20 @@ The [DC/OS](https://dcos.io) deployment tool for appops allows you to create, de
 - It is stateless: state is exclusively kept in (local) descriptor and spec files (a collection of Marathon app specs).
 - It is self-contained: written in Go, `dploy` is a single binary incl. all dependencies.
 
-Before you dive in, see it in action:
-
-<a href="https://asciinema.org/a/44165" width="600px"><img src="https://asciinema.org/a/44165.png" /></a>
-
 ## Installation
 
 From source:
 
     $ go get github.com/mhausenblas/dploy
-    
+
+Download binaries for Linux, OSX, and Windows:
+
+- [v0.5.0](https://github.com/mhausenblas/dploy/releases/tag/0.5.0)
+
 Via Docker:
 
     $ docker create -v /Users/mhausenblas/tmp --name dploy mhausenblas/dploy:0.5.0
     $ docker run --rm -it --volumes-from dploy mhausenblas/dploy:0.5.0 init
-
-To simplify the [DC/OS oauth](https://dcos.io/docs/1.7/administration/security/) handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:
-
-    $ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N
-
-From here on, you can use `http://localhost:8080` for the `marathon_url` attribute in the `dploy.app` file.
 
 ## Dependencies
 
