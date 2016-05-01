@@ -56,7 +56,13 @@
 $ go build
 </code></pre>
 
-<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.5.0" target="_new">download binaries</a> for Linux, OSX, and Windows.</p>
+<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.5.1" target="_new">download binaries</a> for Linux, OSX, and Windows or use it via Docker</p>
+
+<pre><code>$ docker pull mhausenblas/dploy:0.5.1
+
+# you can use dploy as follows then (note the usage of the volume):
+$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.5.1 init /tmp
+</code></pre>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
@@ -98,7 +104,7 @@ Of course, you can also set the log output level on a per-run basis, using <code
 </ul>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy init
-This is dploy version 0.5.0
+This is dploy version 0.5.1
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
@@ -117,7 +123,7 @@ This is dploy version 0.5.0
 <pre><code>$ dploy dryrun</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy dryrun
-This is dploy version 0.5.0
+This is dploy version 0.5.1
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
@@ -136,7 +142,7 @@ This is dploy version 0.5.0
 <pre><code>$ dploy run</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy run
-This is dploy version 0.5.0
+This is dploy version 0.5.1
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
@@ -153,7 +159,7 @@ This is dploy version 0.5.0
 <pre><code>$ dploy destroy</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy destroy
-This is dploy version 0.5.0
+This is dploy version 0.5.1
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
@@ -168,7 +174,7 @@ This is dploy version 0.5.0
 <pre><code>$ dploy ls</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy ls
-This is dploy version 0.5.0
+This is dploy version 0.5.1
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
