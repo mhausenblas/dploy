@@ -56,14 +56,19 @@
 $ go build
 </code></pre>
 
-<p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS oauth</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:</p>
-<pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N</code></pre>
-
-<p>From here on, you can use <code>http://localhost:8080</code> for the Marathon URL (<code>marathon_url</code>) in the <code>dploy.app</code> file.</p>
+<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.5.0" target="_new">download binaries</a> for Linux, OSX, and Windows.</p>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
+In the following we have a look at how to set up and use <code>dploy</code>.
+
+<h3>
+<a id="auth" class="anchor" href="#auth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DC/OS cluster authentication</h3>
+<p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS authentication</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:</p>
+<pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N</code></pre>
+
+<p>The above command forwards traffic from your local machine to the System Marathon in DC/OS. It assumes that you're already authenticated and if this is not the case you want to do a <code>dcos auth login</code> before. Once the tunnel is successfully established you can use <code>http://localhost:8080</code> for the <code>marathon_url</code> attribute in <code>dploy.app</code>.</p>
 <h3>
 <a id="logging" class="anchor" href="#logging" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logging</h3>
 <p>
