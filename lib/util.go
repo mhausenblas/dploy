@@ -26,6 +26,13 @@ func setLogLevel() {
 	}
 }
 
+func ensureWorkDir(workdirPath string) {
+	workDir, _ := filepath.Abs(workdirPath)
+	if _, err := os.Stat(workDir); os.IsNotExist(err) {
+		os.MkdirAll(workdirPath, 0755)
+	}
+}
+
 func writeData(fileName string, data string) {
 	f, err := os.Create(fileName)
 	if err != nil {
@@ -67,8 +74,8 @@ func readAppDescriptor() DployApp {
 	return appDescriptor
 }
 
-func getAppSpecs() []string {
-	appSpecDir, _ := filepath.Abs(filepath.Join("./", MARATHON_APP_SPEC_DIR))
+func getAppSpecs(workdir string) []string {
+	appSpecDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
 	log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Trying to find app specs in ", appSpecDir)
 	files, _ := ioutil.ReadDir(appSpecDir)
 	appSpecs := []string{}
@@ -149,9 +156,9 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	return applications
 }
 
-func marathonCreateApps(marathonURL url.URL) {
+func marathonCreateApps(marathonURL url.URL, workdir string) {
 	client := marathonClient(marathonURL)
-	appSpecs := getAppSpecs()
+	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
 		appSpec := readAppSpec(specFilename)
 		app, err := client.CreateApplication(appSpec)
@@ -166,9 +173,9 @@ func marathonCreateApps(marathonURL url.URL) {
 	}
 }
 
-func marathonDeleteApps(marathonURL url.URL) {
+func marathonDeleteApps(marathonURL url.URL, workdir string) {
 	client := marathonClient(marathonURL)
-	appSpecs := getAppSpecs()
+	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
 		appSpec := readAppSpec(specFilename)
 		_, err := client.DeleteApplication(appSpec.ID)

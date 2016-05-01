@@ -18,8 +18,7 @@ Download binaries for Linux, OSX, and Windows:
 
 Via Docker:
 
-    $ docker create -v /Users/mhausenblas/tmp --name dploy mhausenblas/dploy:0.5.0
-    $ docker run --rm -it --volumes-from dploy mhausenblas/dploy:0.5.0 init
+    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.5.0 init -location=/tmp
 
 ## Dependencies
 
@@ -28,9 +27,7 @@ Via Docker:
 - [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
 - [github.com/olekukonko/tablewriter](https://github.com/olekukonko/tablewriter), a ACSII table formatter.
 
-## Workflow
-
-### Commands
+## Commands
 
 - [x] `dploy init` … creates a new µS-based app for you
 - [x] `dploy dryrun` … validates deployment of the µS-based app
@@ -47,17 +44,7 @@ Additional things planned:
 - Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
 - advanced µS examples using linkerd, VAMP
 
-### Logging
-
-To set the log output level for `dploy`, use the environment variable `DPLOY_LOGLEVEL`. 
-
-For example, to set it globally use:
-
-    $ export DPLOY_LOGLEVEL=debug
-
-Of course, you can also set the log output level on a per-run basis, using `$ DPLOY_LOGLEVEL=info dploy dryrun`. Note that the default value, that is, if you don't set the environment variable, is `DPLOY_LOGLEVEL=error`.
-
-### Docs
+## Docs
 
 To view the `dploy` package docs locally, do the following in your Go workspace:
 
