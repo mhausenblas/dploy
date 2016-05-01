@@ -40,8 +40,11 @@
     <li>It is self-contained: written in Go, <code>dploy</code> is a single binary incl. all dependencies.</li>
 </ul>
 <p>
- The main motivation behind the creation of <code>dploy</code> was the desire to help out developers to <a href="https://speakerdeck.com/charity/devops-for-developers-building-an-effective-ops-org-1" target="_new">strengthen their ops skills</a>. 
+ The main motivation behind the creation of <code>dploy</code> was the desire to help developers to <a href="https://speakerdeck.com/charity/devops-for-developers-building-an-effective-ops-org-1" target="_new">strengthen their ops skills</a>. 
  We use convention over configuration in <code>dploy</code> and given the limited command set it should be fairly easy to get started.
+ Also, note that <code>dploy</code> is routing and <a href="https://dcos.io/docs/1.7/usage/service-discovery/" target="_new">service discovery</a>-agnostic, or put in other words: it is not opinionated about how the µS should be wired up: you can use plain old <a href="https://dcos.io/docs/1.7/usage/service-discovery/">Mesos-DNS</a> or <a href="https://blog.buoyant.io/2016/04/19/linkerd-dcos-microservices-in-production-made-easy/">linkerd</a> or <a href="http://vamp.io/">VAMP</a> or what have you.
+</p>
+<p>
  So, now would be a good time to either <a href="#install">install</a> <code>dploy</code> and start using is, or maybe you want to see it in action first?
 </p>
 
@@ -89,19 +92,21 @@ Of course, you can also set the log output level on a per-run basis, using <code
 
 <p>The supported workflow comprises 8 commands, with the following state transitions:</p>
 <img src="images/dploy-states.png" alt="dploy state machine" />
-
+<p>Usage:</p>    
+<pre><code>$ dploy &lt;command&gt; [workdir] [command-args]</code></pre>
+<p>With:</p>
+<ul>
+    <li><code>&lt;command&gt;</code> one of the below.</li>
+    <li>OPTIONAL <code>[workdir]</code>: where to perform the command, defaults to <code>./</code>, i.e. the current directory.</li>
+    <li>OPTIONAL <code>[command-args]</code>: zero or more arguments, depending on the command.</li>
+</ul>
 <h4>
 <a id="init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h4>
 <p>
     This command creates an app descriptor <code>dploy.app</code> as well as the <code>specs/</code> directory.  
 </p>
 <p><strong>Usage</strong>:</p>
-<pre><code>$ dploy init [-location=DIR]</code></pre>
-<p>With the following optional parameter:</p>
-<ul>
-    <li>If <code>-location</code> is not present, <code>dploy.app</code> is created in the current dir</li>
-    <li>If <code>-location</code> is present, you can specify its value <code>DIR</code> either absolute (e.g., <code>/tmp/</code>) or relative to the directory <code>dploy</code> is executed, for example, <code>../.</code> means create <code>dploy.app</code> in the parent dir</li>
-</ul>
+<pre><code>$ dploy init</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy init
 This is dploy version 0.5.1
