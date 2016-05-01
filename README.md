@@ -14,11 +14,14 @@ From source:
 
 Download binaries for Linux, OSX, and Windows:
 
-- [v0.5.0](https://github.com/mhausenblas/dploy/releases/tag/0.5.0)
+- [v0.5.1](https://github.com/mhausenblas/dploy/releases/tag/0.5.1)
 
 Via Docker:
 
-    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.5.0 init -location=/tmp
+    $ docker pull mhausenblas/dploy:0.5.1
+    
+    # you can use dploy as follows then (note the usage of the volume):
+    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.5.1 init /tmp
 
 ## Dependencies
 
