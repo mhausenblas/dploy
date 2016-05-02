@@ -1,5 +1,5 @@
 {
-	"id": "buzzgen",
+	"id": "/dployex/buzzgen",
 	"cmd": "echo cloud native hyperscale hybrid container microservices architecture >index.html && python3 -m http.server 8888",
 	"cpus": 0.5,
 	"mem": 32.0,
