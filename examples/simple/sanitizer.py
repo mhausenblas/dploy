@@ -1,4 +1,6 @@
 import os
+import urllib2
+
 from flask import Flask
 app = Flask(__name__)
 
@@ -14,7 +16,6 @@ def lookup_service(service_name):
 
 def sanitize():
     ip, port = lookup_service("buzzgen-dployex.marathon.mesos")
-    import urllib2
     response = urllib2.urlopen("%s:%s" %(ip, str(port)))
     content = response.read()
     return content*10
