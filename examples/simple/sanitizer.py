@@ -12,7 +12,9 @@ def sanitize():
     service_name = "buzzgen-dployex.marathon.mesos"
     components = service_name.split('.')
     lookup = "_" + components[0] + "._tcp." + ".".join(str(x) for x in components[1:])
-    payload = json.load(urllib.request.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + "."))
+    response = urllib.request.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + ".")
+    str_response = response.read().decode('utf-8')
+    payload = json.loads(str_response)
     service_instance = random.choice(payload)
     bg_service = "http://" + service_instance['ip'] + ":" + str(service_instance['port'])
     response = urllib.request.urlopen(bg_service)
