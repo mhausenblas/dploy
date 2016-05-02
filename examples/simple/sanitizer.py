@@ -1,22 +1,24 @@
 import os
 import urllib2
+import json
+import random
 
 from flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
-
-def lookup_service(service_name):
-    mesosdns_endpoint = "leader.mesos:8123"
+def sanitize():
+    mesosdns_endpoint = "http://leader.mesos:8123"
+    service_name = "buzzgen-dployex.marathon.mesos"
     components = service_name.split('.')
     lookup = "_" + components[0] + "._tcp." + ".".join(str(x) for x in components[1:])
+    print lookup
     payload = json.load(urllib2.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + "."))
+    print payload
     service_instance = random.choice(payload)
-    return (service_instance['ip'], service_instance['port'])
-
-def sanitize():
-    ip, port = lookup_service("buzzgen-dployex.marathon.mesos")
-    response = urllib2.urlopen("%s:%s" %(ip, str(port)))
+    bg_service = "http://" + service_instance['ip'] + ":" + str(service_instance['port'])
+    print bg_service
+    response = urllib2.urlopen(bg_service)
     content = response.read()
     return content*10
 
