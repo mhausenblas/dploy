@@ -1,7 +1,7 @@
 {
 	"id": "/dployex/sanitizer",
 	"dependencies": ["/dployex/buzzgen"],
-	"cmd": "curl -OsL sanitizer_bootstrap.sh && curl -OsL sanitizer.py && chmod 755 sanitizer_bootstrap.sh && ./sanitizer_bootstrap.sh",
+	"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/simple/sanitizer_bootstrap.sh && curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/simple/sanitizer.py && chmod 755 sanitizer_bootstrap.sh && ./sanitizer_bootstrap.sh",
 	"cpus": 0.5,
 	"mem": 100,
 	"container": {
