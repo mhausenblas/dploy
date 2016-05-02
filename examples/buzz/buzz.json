@@ -29,7 +29,7 @@
 			"dependencies": [
 				"/dployex/buzzgen"
 			],
-			"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/simple/buzzcon.py && python3 buzzcon.py",
+			"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzzcon.py && python3 buzzcon.py",
 			"cpus": 0.5,
 			"mem": 100,
 			"container": {
