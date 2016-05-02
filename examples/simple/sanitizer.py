@@ -1,5 +1,5 @@
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import random
 
@@ -12,10 +12,10 @@ def sanitize():
     service_name = "buzzgen-dployex.marathon.mesos"
     components = service_name.split('.')
     lookup = "_" + components[0] + "._tcp." + ".".join(str(x) for x in components[1:])
-    payload = json.load(urllib2.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + "."))
+    payload = json.load(urllib.request.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + "."))
     service_instance = random.choice(payload)
     bg_service = "http://" + service_instance['ip'] + ":" + str(service_instance['port'])
-    response = urllib2.urlopen(bg_service)
+    response = urllib.request.urlopen(bg_service)
     content = response.read()
     return content*10
 
