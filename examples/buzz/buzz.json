@@ -1,53 +1,58 @@
 {
 	"id": "/dployex",
-	"apps": [
+	"groups": [
 		{
-			"id": "/dployex/buzzgen",
-			"cmd": "echo cloud native hyperscale hybrid container microservices architecture >index.html && python3 -m http.server 8888",
-			"cpus": 0.5,
-			"mem": 32.0,
-			"container": {
-				"type": "DOCKER",
-				"docker": {
-					"image": "python:3",
-					"forcePullImage": true,
-					"network": "BRIDGE",
-					"portMappings": [
-						{
-							"containerPort": 8888,
-							"hostPort": 0
+			"id": "buzz",
+			"apps": [
+				{
+					"id": "gen",
+					"cmd": "echo cloud native hyperscale hybrid container microservices architecture >index.html && python3 -m http.server 8888",
+					"cpus": 0.5,
+					"mem": 32.0,
+					"container": {
+						"type": "DOCKER",
+						"docker": {
+							"image": "python:3",
+							"forcePullImage": true,
+							"network": "BRIDGE",
+							"portMappings": [
+								{
+									"containerPort": 8888,
+									"hostPort": 0
+								}
+							]
 						}
+					},
+					"acceptedResourceRoles": [
+						"slave_public"
+					]
+				},
+				{
+					"id": "con",
+					"dependencies": [
+						"/dployex/buzz/gen"
+					],
+					"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzzcon.py && python3 buzzcon.py",
+					"cpus": 0.5,
+					"mem": 100,
+					"container": {
+						"type": "DOCKER",
+						"docker": {
+							"image": "python:3",
+							"forcePullImage": true,
+							"network": "BRIDGE",
+							"portMappings": [
+								{
+									"containerPort": 8888,
+									"hostPort": 0
+								}
+							]
+						}
+					},
+					"acceptedResourceRoles": [
+						"slave_public"
 					]
 				}
-			},
-			"acceptedResourceRoles": [
-				"slave_public"
-			]
-		},
-		{
-			"id": "/dployex/buzzcon",
-			"dependencies": [
-				"/dployex/buzzgen"
-			],
-			"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzzcon.py && python3 buzzcon.py",
-			"cpus": 0.5,
-			"mem": 100,
-			"container": {
-				"type": "DOCKER",
-				"docker": {
-					"image": "python:3",
-					"forcePullImage": true,
-					"network": "BRIDGE",
-					"portMappings": [
-						{
-							"containerPort": 8888,
-							"hostPort": 0
-						}
-					]
-				}
-			},
-			"acceptedResourceRoles": [
-				"slave_public"
 			]
 		}
 	]
