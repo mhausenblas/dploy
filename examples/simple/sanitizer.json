@@ -1,13 +1,13 @@
 {
 	"id": "/dployex/sanitizer",
 	"dependencies": ["/dployex/buzzgen"],
-	"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/simple/sanitizer.py && python sanitizer.py",
+	"cmd": "curl -OsL https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/simple/sanitizer.py  && pip3 install flask && python sanitizer.py",
 	"cpus": 0.5,
 	"mem": 100,
 	"container": {
 		"type": "DOCKER",
 		"docker": {
-			"image": "x110dc/dev",
+			"image": "python:3",
 			"forcePullImage": true,
 			"network": "BRIDGE",
 			"portMappings": [
