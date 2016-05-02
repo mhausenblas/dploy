@@ -92,19 +92,29 @@ func getAppSpecs(workdir string) []string {
 	return appSpecs
 }
 
-func readAppSpec(appSpecFilename string) *marathon.Application {
+func readAppSpec(appSpecFilename string) (*marathon.Application, *marathon.Group) {
 	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Trying to read app spec ", appSpecFilename)
 	d, err := ioutil.ReadFile(appSpecFilename)
 	if err != nil {
 		log.WithFields(log.Fields{"marathon": "read_app_spec"}).Error("Can't read app spec ", appSpecFilename)
 	}
 	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Got app spec:\n", string(d))
-	app := marathon.Application{}
-	uerr := json.Unmarshal([]byte(d), &app)
-	if uerr != nil {
-		log.Fatalf("Failed to de-serialize app spec due to %v", uerr)
+
+	if strings.Contains(string(d), "groups") { // we're dealing with a group ; this sniffing is a horrible hack
+		group := marathon.Group{}
+		uerr := json.Unmarshal([]byte(d), &group)
+		if uerr != nil {
+			log.Fatalf("Failed to de-serialize app spec for group due to %v", uerr)
+		}
+		return nil, &group
+	} else { // we're dealing with a simple app
+		app := marathon.Application{}
+		uerr := json.Unmarshal([]byte(d), &app)
+		if uerr != nil {
+			log.Fatalf("Failed to de-serialize app spec due to %v", uerr)
+		}
+		return &app, nil
 	}
-	return &app
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -126,23 +136,40 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
-func marathonAppStatus(marathonURL url.URL, appID string) string {
+func marathonAppStatus(marathonURL url.URL, appID string, isGroup bool) string {
 	client := marathonClient(marathonURL)
-	details, err := client.Application(appID)
-	if err != nil {
-		log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appID, " not running")
-		return SYSTEM_MSG_OFFLINE
-	} else {
-		if details.Tasks != nil && len(details.Tasks) > 0 {
-			health, _ := client.ApplicationOK(details.ID)
-			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", details.ID, "health status: ", health)
-			if health {
+
+	if isGroup {
+		gExists, _ := client.HasGroup(appID)
+		if !gExists {
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Group ", appID, " does not exist")
+			return SYSTEM_MSG_OFFLINE
+		} else {
+			_, err := client.Group(appID)
+			if err != nil {
+				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Group ", appID, " not running")
+				return SYSTEM_MSG_OFFLINE
+			} else {
 				return SYSTEM_MSG_ONLINE
+			}
+		}
+	} else {
+		details, err := client.Application(appID)
+		if err != nil {
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appID, " not running")
+			return SYSTEM_MSG_OFFLINE
+		} else {
+			if details.Tasks != nil && len(details.Tasks) > 0 {
+				health, _ := client.ApplicationOK(details.ID)
+				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", details.ID, " health status: ", health)
+				if health {
+					return SYSTEM_MSG_ONLINE
+				} else {
+					return SYSTEM_MSG_OFFLINE
+				}
 			} else {
 				return SYSTEM_MSG_OFFLINE
 			}
-		} else {
-			return SYSTEM_MSG_OFFLINE
 		}
 	}
 }
@@ -160,16 +187,28 @@ func marathonCreateApps(marathonURL url.URL, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
-		appSpec := readAppSpec(specFilename)
-		app, err := client.CreateApplication(appSpec)
-		if err != nil {
-			log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create application due to:\n\t", err)
-			log.Fatalf("Exiting for now; try running `dploy destroy` first.")
+		appSpec, group := readAppSpec(specFilename)
+		if appSpec != nil {
+			app, err := client.CreateApplication(appSpec)
+			if err != nil {
+				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create application due to:\n\t", err)
+				log.Fatalf("Exiting for now; try running `dploy destroy` first.")
+			} else {
+				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
+			}
+			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		} else {
-			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
-			log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
+			err := client.CreateGroup(group)
+			if err != nil {
+				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create group due to:\n\t", err)
+				log.Fatalf("Exiting for now; try running `dploy destroy` first.")
+			} else {
+				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created group ", group.ID)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", group)
+			}
+			client.WaitOnGroup(group.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
-		client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 	}
 }
 
@@ -177,13 +216,23 @@ func marathonDeleteApps(marathonURL url.URL, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
-		appSpec := readAppSpec(specFilename)
-		_, err := client.DeleteApplication(appSpec.ID)
-		if err != nil {
-			log.Fatalf("Failed to create application %s. Error: %s", appSpec.ID, err)
+		appSpec, groupAppSpec := readAppSpec(specFilename)
+		if appSpec != nil {
+			_, err := client.DeleteApplication(appSpec.ID)
+			if err != nil {
+				log.Fatalf("Failed to create application %s. Error: %s", appSpec.ID, err)
+			} else {
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted app ", appSpec.ID)
+			}
+			client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		} else {
-			log.WithFields(log.Fields{"marathon": "create_app"}).Info("Deleted app ", appSpec.ID)
+			_, err := client.DeleteGroup(groupAppSpec.ID)
+			if err != nil {
+				log.Fatalf("Failed to create group %s. Error: %s", groupAppSpec.ID, err)
+			} else {
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted group ", groupAppSpec.ID)
+			}
+			client.WaitOnDeployment(groupAppSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
-		client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 	}
 }

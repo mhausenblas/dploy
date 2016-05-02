@@ -161,9 +161,23 @@ func ListResources(workdir string) {
 			table.Append(row)
 			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
 				for _, specFilename := range appSpecs {
-					appSpec := readAppSpec(specFilename)
-					appStatus := marathonAppStatus(*marathonURL, appSpec.ID)
-					row := []string{"/" + appSpec.ID, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
+					appSpec, groupAppSpec := readAppSpec(specFilename)
+					appStatus := ""
+					appID := ""
+					if appSpec != nil {
+						appStatus = marathonAppStatus(*marathonURL, appSpec.ID, false)
+						appID = appSpec.ID
+						if !strings.HasPrefix(appSpec.ID, "/") {
+							appID = "/" + appSpec.ID
+						}
+					} else {
+						appStatus = marathonAppStatus(*marathonURL, groupAppSpec.ID, true)
+						appID = groupAppSpec.ID
+						if !strings.HasPrefix(groupAppSpec.ID, "/") {
+							appID = "/" + groupAppSpec.ID
+						}
+					}
+					row := []string{appID, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
 					table.Append(row)
 				}
 				fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
