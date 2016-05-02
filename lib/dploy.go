@@ -13,6 +13,8 @@ import (
 )
 
 const (
+	ENV_VAR_DPLOY_LOGLEVEL   string        = "DPLOY_LOGLEVEL"
+	ENV_VAR_DPLOY_EXAMPLES   string        = "DPLOY_EXAMPLES"
 	DEFAULT_DEPLOY_WAIT_TIME time.Duration = 10
 	APP_DESCRIPTOR_FILENAME  string        = "dploy.app"
 	DEFAULT_MARATHON_URL     string        = "http://localhost:8080"
@@ -62,7 +64,7 @@ func Init(workdir string) {
 	fmt.Printf("%s\tDone initializing your app:\n", USER_MSG_SUCCESS)
 	fmt.Printf("\t\tSet up app descriptor in %s\n", appDescriptorLocation)
 	fmt.Printf("\t\tCreated app spec directory %s\n", specsDir)
-	ex := os.Getenv("DPLOY_EXAMPLES")
+	ex := os.Getenv(ENV_VAR_DPLOY_EXAMPLES)
 	switch strings.ToLower(ex) {
 	case "all":
 		fetchExample(EXAMPLE_HELLO_WORLD, specsDir)

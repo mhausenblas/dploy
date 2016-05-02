@@ -15,7 +15,7 @@ import (
 )
 
 func setLogLevel() {
-	logLevel := os.Getenv("DPLOY_LOGLEVEL")
+	logLevel := os.Getenv(ENV_VAR_DPLOY_LOGLEVEL)
 	switch strings.ToLower(logLevel) {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
