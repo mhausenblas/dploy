@@ -26,8 +26,8 @@ const (
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
-	SYSTEM_MSG_ONLINE        string        = "💚\tonline"
-	SYSTEM_MSG_OFFLINE       string        = "💔\toffline"
+	SYSTEM_MSG_ONLINE        string        = "online 💚"
+	SYSTEM_MSG_OFFLINE       string        = "offline 💔"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -167,31 +167,34 @@ func ListResources(workdir string) {
 		appDescriptor := readAppDescriptor()
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			table := tw.NewWriter(os.Stdout)
-			row := []string{"Marathon", marathonURL.String(), SYSTEM_MSG_ONLINE}
+			row := []string{"Marathon", "PLATFORM", marathonURL.String(), SYSTEM_MSG_ONLINE}
 			table.Append(row)
 			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
 				for _, specFilename := range appSpecs {
 					appSpec, groupAppSpec := readAppSpec(specFilename)
-					appStatus := ""
 					appID := ""
+					resType := ""
+					appStatus := ""
 					if appSpec != nil {
 						appStatus = marathonAppStatus(*marathonURL, appSpec.ID, false)
+						resType = "APP"
 						appID = appSpec.ID
 						if !strings.HasPrefix(appSpec.ID, "/") {
 							appID = "/" + appSpec.ID
 						}
 					} else {
 						appStatus = marathonAppStatus(*marathonURL, groupAppSpec.ID, true)
+						resType = "GROUP"
 						appID = groupAppSpec.ID
 						if !strings.HasPrefix(groupAppSpec.ID, "/") {
 							appID = "/" + groupAppSpec.ID
 						}
 					}
-					row := []string{appID, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
+					row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
 					table.Append(row)
 				}
 				fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-				table.SetHeader([]string{"RESOURCE", "LOCATION", "STATUS"})
+				table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION", "STATUS"})
 				table.SetCenterSeparator("")
 				table.SetColumnSeparator("")
 				table.SetRowSeparator("")
