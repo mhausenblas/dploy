@@ -26,8 +26,8 @@ const (
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
-	SYSTEM_MSG_ONLINE        string        = "online 💚"
-	SYSTEM_MSG_OFFLINE       string        = "offline 💔"
+	SYSTEM_MSG_ONLINE        string        = "online\t💚"
+	SYSTEM_MSG_OFFLINE       string        = "offline\t💔"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
