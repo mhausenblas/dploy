@@ -33,6 +33,12 @@ func ensureWorkDir(workdirPath string) {
 	}
 }
 
+func fetchExample(example string, specsDir string) {
+	exampleURL, _ := url.Parse(example)
+	exampleFileName, exampleContent := getExample(*exampleURL)
+	writeData(filepath.Join(specsDir, exampleFileName), exampleContent)
+}
+
 func writeData(fileName string, data string) {
 	f, err := os.Create(fileName)
 	if err != nil {

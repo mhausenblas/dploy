@@ -20,6 +20,7 @@ const (
 	MARATHON_APP_SPEC_DIR    string        = "specs/"
 	MARATHON_APP_SPEC_EXT    string        = ".json"
 	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
+	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
@@ -58,13 +59,20 @@ func Init(workdir string) {
 		os.Mkdir(specsDir, 0755)
 		log.WithFields(log.Fields{"cmd": "init"}).Info("Created ", specsDir)
 	}
-	exampleURL, err := url.Parse(EXAMPLE_HELLO_WORLD)
-	exampleFileName, exampleContent := getExample(*exampleURL)
-	writeData(filepath.Join(specsDir, exampleFileName), exampleContent)
 	fmt.Printf("%s\tDone initializing your app:\n", USER_MSG_SUCCESS)
-	fmt.Printf("\t Set up app descriptor in %s\n", appDescriptorLocation)
-	fmt.Printf("\t Created app spec directory %s\n", specsDir)
-	fmt.Printf("\t Initialized app spec directory with %s\n", exampleFileName)
+	fmt.Printf("\t\tSet up app descriptor in %s\n", appDescriptorLocation)
+	fmt.Printf("\t\tCreated app spec directory %s\n", specsDir)
+	ex := os.Getenv("DPLOY_EXAMPLES")
+	switch strings.ToLower(ex) {
+	case "all":
+		fetchExample(EXAMPLE_HELLO_WORLD, specsDir)
+		fetchExample(EXAMPLE_BUZZ, specsDir)
+		fmt.Printf("\t\tInitialized app spec directory with some examples\n")
+	case "buzz":
+		fetchExample(EXAMPLE_BUZZ, specsDir)
+		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
+	default:
+	}
 	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n", USER_MSG_INFO)
 }
 
