@@ -12,7 +12,7 @@
 			"network": "BRIDGE",
 			"portMappings": [
 				{
-					"containerPort": 8888,
+					"containerPort": 5000,
 					"hostPort": 0
 				}
 			]
