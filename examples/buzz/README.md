@@ -49,7 +49,7 @@ The consumer `/dployex/buzz/con` is a simple [Python app server](buzzcon.py) tha
 To execute the buzz example, first make sure that you've actually got it installed via `dploy init` locally:
 
 ```bash
-$ DPLOY_EXAMPLES=buzz dploy init
+~/tmp $ DPLOY_EXAMPLES=buzz dploy init
 This is dploy version 0.5.3
 	Using workdir: ./
 	Please visit http://dploy.sh to learn more about me,
@@ -61,6 +61,7 @@ This is dploy version 0.5.3
 		Created app spec directory /Users/mhausenblas/tmp/specs
 		Initialized app spec directory with the buzz example
 🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+
 ~/tmp $ ls -al specs/
 total 8
 drwxr-xr-x  2 mhausenblas  staff   102B  2 May 16:30 .
@@ -86,7 +87,7 @@ Visiting the DC/OS Marathon UI you should now see the following:
 
 ![Buzz services deployed in Marathon](../../img/example_buzz_marathon.png)
 
-In the last step you want to check the output of the buzz consumer, for example, you can find out where it serves it using the following DC/OS CLI command (note that if you're not on the same network as the cluster, you'll have to figure out the public IP by yourself):
+In the last step you want to check the output of the buzz consumer. For example, you can find out where the consumer serves its content using the following DC/OS CLI command (note that if you're not on the same network as the cluster, you'll have to figure out the public IP by yourself; what you see below is the internal IP):
 
 ```bash
 ~/tmp $ dcos marathon task list --json | jq "map(select(.appId==\"/dployex/buzz/con\").host, select(.appId==\"/dployex/buzz/con\").ports)"
@@ -114,4 +115,4 @@ cloud native hyperscale hybrid container microservices architecture
 cloud native hyperscale hybrid container microservices architecture
 ```
 
-Once you're that far, try to experiment around: for example, what happens when you change the `"cmd"` value of the buzz generator or what happens when you scale one of the µS?
+Once you're that far, try to experiment around: for example, what happens when you change the [cmd](https://github.com/mhausenblas/dploy/blob/master/examples/buzz/buzz.json#L9) value of the buzz generator or what happens when you scale one of the µS?
