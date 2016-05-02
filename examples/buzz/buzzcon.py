@@ -8,7 +8,7 @@ class BuzzConsumerHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         mesosdns_endpoint = "http://leader.mesos:8123"
-        service_name = "buzz-gen-dployex.marathon.mesos"
+        service_name = "gen-buzz-dployex.marathon.mesos"
         components = service_name.split(".")
         lookup = "_" + components[0] + "._tcp." + ".".join(str(x) for x in components[1:])
         response = urllib.request.urlopen(mesosdns_endpoint + "/v1/services/" + lookup + ".")
