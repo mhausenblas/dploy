@@ -53,7 +53,7 @@
 <h2>
 <a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
-<p>From source:</p>
+<p>From source (will get you always the latest version):</p>
 
 <pre><code>$ go get github.com/mhausenblas/dploy
 $ go build
@@ -103,22 +103,38 @@ Of course, you can also set the log output level on a per-run basis, using <code
 <h4>
 <a id="init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h4>
 <p>
-    This command creates an app descriptor <code>dploy.app</code> as well as the <code>specs/</code> directory.  
+    This command creates an app descriptor <code>dploy.app</code> as well as the <code>specs/</code> directory and
+    using the environment variable <code>DPLOY_EXAMPLES</code> you can influence which, if any examples should be made available.
 </p>
 <p><strong>Usage</strong>:</p>
 <pre><code>$ dploy init</code></pre>
-<p><strong>Example</strong>:</p>
+<p><strong>Examples</strong>:</p>
 <pre><code>$ dploy init
-This is dploy version 0.5.1
+This is dploy version 0.5.2
+	Using workdir: ./
 	Please visit http://dploy.sh to learn more about me,
 	report issues and also how to contribute to this project.
 ================================================================================
+🗣	Initializing your app ...
 🙌	Done initializing your app:
- I set up app descriptor in /Users/mhausenblas/Documents/repos/mhausenblas/dploy/dploy.app
- I created app spec directory /Users/mhausenblas/Documents/repos/mhausenblas/dploy/specs
- I initialized app spec directory with helloworld.json
+		Set up app descriptor in /Users/mhausenblas/tmp/dploy.app
+		Created app spec directory /Users/mhausenblas/tmp/specs
 🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
 </code></pre>
+<pre><code>$ DPLOY_EXAMPLES=all dploy init
+This is dploy version 0.5.2
+	Using workdir: ./
+	Please visit http://dploy.sh to learn more about me,
+	report issues and also how to contribute to this project.
+================================================================================
+🗣	Initializing your app ...
+🙌	Done initializing your app:
+		Set up app descriptor in /Users/mhausenblas/tmp/dploy.app
+		Created app spec directory /Users/mhausenblas/tmp/specs
+		Initialized app spec directory with some examples
+🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+</code></pre>
+
 <h4>
 <a id="dryrun" class="anchor" href="#dploy-dryrun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy dryrun</h4>
 <p>
