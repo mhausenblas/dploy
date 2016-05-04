@@ -112,6 +112,7 @@ func readAppSpec(dployAppName, appSpecFilename string) (*marathon.Application, *
 		if uerr != nil {
 			log.Fatalf("Failed to de-serialize app spec for group due to %v", uerr)
 		}
+		labelGroup(&group, dployAppName)
 		return nil, &group
 	} else { // we're dealing with a simple app
 		app := marathon.Application{}
@@ -119,9 +120,29 @@ func readAppSpec(dployAppName, appSpecFilename string) (*marathon.Application, *
 		if uerr != nil {
 			log.Fatalf("Failed to de-serialize app spec due to %v", uerr)
 		}
-		app.AddLabel(MARATHON_LABEL, dployAppName)
+		log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Owning app ", app.ID)
+		labelApp(&app, dployAppName)
 		return &app, nil
 	}
+}
+
+func labelGroup(group *marathon.Group, label string) {
+	log.WithFields(log.Fields{"marathon": "label_group"}).Debug("In group ", group.ID)
+	if group.Apps != nil {
+		for _, app := range group.Apps {
+			labelApp(app, label)
+		}
+	}
+	if group.Groups != nil {
+		for _, g := range group.Groups {
+			labelGroup(g, label)
+		}
+	}
+}
+
+func labelApp(app *marathon.Application, label string) {
+	log.WithFields(log.Fields{"marathon": "label_group"}).Debug("Owning app ", app.ID)
+	app.AddLabel(MARATHON_LABEL, label)
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -227,7 +248,7 @@ func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string
 		if appSpec != nil {
 			_, err := client.DeleteApplication(appSpec.ID)
 			if err != nil {
-				log.Fatalf("Failed to delete application %s. Error: %s", appSpec.ID, err)
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Error("Failed to delete application ", appSpec.ID, " due to ", err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted app ", appSpec.ID)
 			}
@@ -235,7 +256,7 @@ func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string
 		} else {
 			_, err := client.DeleteGroup(groupAppSpec.ID)
 			if err != nil {
-				log.Fatalf("Failed to delete group %s. Error: %s", groupAppSpec.ID, err)
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Error("Failed to delete group ", groupAppSpec.ID, " due to ", err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted group ", groupAppSpec.ID)
 			}
