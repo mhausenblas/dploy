@@ -218,8 +218,8 @@ func ListRuntimeProperties(workdir string) {
 		log.Fatal(err)
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
-	fmt.Printf("%s\tHere are your apps: %s\n", USER_MSG_INFO)
+	fmt.Printf("%s\tRuntime properties of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
 	for _, app := range myApps {
-		fmt.Printf("%s\n", USER_MSG_INFO, string(app))
+		fmt.Printf("%s\n", app.ID)
 	}
 }

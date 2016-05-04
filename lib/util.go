@@ -202,17 +202,22 @@ func marathonAppStatus(marathonURL url.URL, appID string, isGroup bool) string {
 	}
 }
 
-func marathonAppRuntime(marathonURL url.URL, dployAppName string) []string {
+func marathonAppRuntime(marathonURL url.URL, dployAppName string) []marathon.Application {
 	client := marathonClient(marathonURL)
 	applications, err := client.Applications(nil)
-	var myApps []string
+	var myApps []marathon.Application
 	if err != nil {
 		log.Fatalf("Failed to list Marathon apps. Error: %s", err)
 	}
 	for _, app := range applications.Apps {
-		log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("Checking application ", app.ID, " against label ", dployAppName)
 		if app.Labels != nil {
-			myApps = append(myApps, app.ID)
+			log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("Checking application ", app.ID, " against label ", dployAppName)
+			for k, v := range *app.Labels {
+				log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("LABEL: ", k, " VALUE: ", v)
+				if k == MARATHON_LABEL && v == dployAppName {
+					myApps = append(myApps, app)
+				}
+			}
 		}
 	}
 	return myApps
