@@ -84,7 +84,6 @@ func Init(workdir string) {
 // checks if the app spec directory is present, incl. at least one Marathon app spec.
 func DryRun(workdir string) {
 	setLogLevel()
-	ensureWorkDir(workdir)
 	fmt.Printf("%s\tKicking the tires! Checking Marathon connection, descriptor and app specs ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
@@ -124,7 +123,6 @@ func DryRun(workdir string) {
 // It scans the `specs/` directory for Marathon app specs and launches them using the Marathon API.
 func Run(workdir string) {
 	setLogLevel()
-	ensureWorkDir(workdir)
 	fmt.Printf("%s\tOK, let's rock and roll! Trying to launch your app ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
@@ -140,7 +138,6 @@ func Run(workdir string) {
 // It scans the `specs/` directory for Marathon app specs and deletes apps using the Marathon API.
 func Destroy(workdir string) {
 	setLogLevel()
-	ensureWorkDir(workdir)
 	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
@@ -154,7 +151,6 @@ func Destroy(workdir string) {
 // ListResources lists the resource definitions of the app.
 func ListResources(workdir string) {
 	setLogLevel()
-	ensureWorkDir(workdir)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
@@ -210,5 +206,20 @@ func ListResources(workdir string) {
 			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
 			os.Exit(3)
 		}
+	}
+}
+
+// ListRuntimeProperties lists runtime properties of the app.
+func ListRuntimeProperties(workdir string) {
+	setLogLevel()
+	appDescriptor := readAppDescriptor()
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
+	fmt.Printf("%s\tHere are your apps: %s\n", USER_MSG_INFO)
+	for _, app := range myApps {
+		fmt.Printf("%s\n", USER_MSG_INFO, string(app))
 	}
 }

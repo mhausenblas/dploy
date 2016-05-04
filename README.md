@@ -37,7 +37,7 @@ Via Docker:
 - [x] `dploy run`… launches the µS-based app using the Marathon API
 - [x] `dploy destroy`… tears down µS-based app using the Marathon API
 - [x] `dploy ls` … lists the resources of the µS-based app
-- [ ] `dploy ps` … lists runtime properties of the µS-based app
+- [x] `dploy ps` … lists runtime properties of the µS-based app
 - [ ] `dploy update`… updates runtime properties of the µS-based app
 - [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe
 

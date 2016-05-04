@@ -16,7 +16,7 @@ const (
 \____ | |   __/ |____/ \____/ / ____|
      \/ |__|                  \/     
 `
-	VERSION = "0.5.5"
+	VERSION = "0.6.0"
 )
 
 var (
@@ -43,6 +43,7 @@ func init() {
 		fmt.Fprint(os.Stderr, "\trun ... launches the app using `dploy.app` and the content of `specs/`\n")
 		fmt.Fprint(os.Stderr, "\tdestroy ... tears down the app\n")
 		fmt.Fprint(os.Stderr, "\tls ... lists the app's resources\n")
+		fmt.Fprint(os.Stderr, "\tps ... lists runtime properties of the app\n")
 		fmt.Fprint(os.Stderr, "\nThe `workdir` parameters defaults to `./`, that is, the current directory.\n")
 		// fmt.Fprint(os.Stderr, "\nValid values for `command-args` are:\n")
 		// flag.PrintDefaults()
@@ -73,6 +74,8 @@ func main() {
 		dploy.Destroy(workdir)
 	case "ls":
 		dploy.ListResources(workdir)
+	case "ps":
+		dploy.ListRuntimeProperties(workdir)
 	default:
 		fmt.Fprint(os.Stderr, flag.Args()[0], " is not a valid command\n")
 		flag.Usage()
