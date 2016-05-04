@@ -21,6 +21,7 @@ const (
 	DEFAULT_APP_NAME         string        = "CHANGEME"
 	MARATHON_APP_SPEC_DIR    string        = "specs/"
 	MARATHON_APP_SPEC_EXT    string        = ".json"
+	MARATHON_LABEL           string        = "DPLOY"
 	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
 	USER_MSG_SUCCESS         string        = "🙌"
@@ -130,7 +131,7 @@ func Run(workdir string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	marathonCreateApps(*marathonURL, workdir)
+	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
 	fmt.Printf("%s\tNow you can use `dploy ls` to list resources or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
 }
@@ -146,7 +147,7 @@ func Destroy(workdir string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	marathonDeleteApps(*marathonURL, workdir)
+	marathonDeleteApps(*marathonURL, appDescriptor.AppName, workdir)
 	fmt.Printf("%s\tDestroyed your app!\n", USER_MSG_SUCCESS)
 }
 
@@ -165,14 +166,13 @@ func ListResources(workdir string) {
 		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
 		os.Exit(3)
 	} else {
-		appDescriptor := readAppDescriptor()
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			table := tw.NewWriter(os.Stdout)
 			row := []string{"Marathon", "PLATFORM", marathonURL.String(), SYSTEM_MSG_ONLINE}
 			table.Append(row)
 			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
 				for _, specFilename := range appSpecs {
-					appSpec, groupAppSpec := readAppSpec(specFilename)
+					appSpec, groupAppSpec := readAppSpec(appDescriptor.AppName, specFilename)
 					appID := ""
 					resType := ""
 					appStatus := ""

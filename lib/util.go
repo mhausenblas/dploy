@@ -98,7 +98,7 @@ func getAppSpecs(workdir string) []string {
 	return appSpecs
 }
 
-func readAppSpec(appSpecFilename string) (*marathon.Application, *marathon.Group) {
+func readAppSpec(dployAppName, appSpecFilename string) (*marathon.Application, *marathon.Group) {
 	log.WithFields(log.Fields{"marathon": "read_app_spec"}).Debug("Trying to read app spec ", appSpecFilename)
 	d, err := ioutil.ReadFile(appSpecFilename)
 	if err != nil {
@@ -119,6 +119,7 @@ func readAppSpec(appSpecFilename string) (*marathon.Application, *marathon.Group
 		if uerr != nil {
 			log.Fatalf("Failed to de-serialize app spec due to %v", uerr)
 		}
+		app.AddLabel(MARATHON_LABEL, dployAppName)
 		return &app, nil
 	}
 }
@@ -189,11 +190,11 @@ func marathonGetApps(marathonURL url.URL) *marathon.Applications {
 	return applications
 }
 
-func marathonCreateApps(marathonURL url.URL, workdir string) {
+func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
-		appSpec, group := readAppSpec(specFilename)
+		appSpec, group := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
 			app, err := client.CreateApplication(appSpec)
 			if err != nil {
@@ -218,15 +219,15 @@ func marathonCreateApps(marathonURL url.URL, workdir string) {
 	}
 }
 
-func marathonDeleteApps(marathonURL url.URL, workdir string) {
+func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
-		appSpec, groupAppSpec := readAppSpec(specFilename)
+		appSpec, groupAppSpec := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
 			_, err := client.DeleteApplication(appSpec.ID)
 			if err != nil {
-				log.Fatalf("Failed to create application %s. Error: %s", appSpec.ID, err)
+				log.Fatalf("Failed to delete application %s. Error: %s", appSpec.ID, err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted app ", appSpec.ID)
 			}
@@ -234,7 +235,7 @@ func marathonDeleteApps(marathonURL url.URL, workdir string) {
 		} else {
 			_, err := client.DeleteGroup(groupAppSpec.ID)
 			if err != nil {
-				log.Fatalf("Failed to create group %s. Error: %s", groupAppSpec.ID, err)
+				log.Fatalf("Failed to delete group %s. Error: %s", groupAppSpec.ID, err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted group ", groupAppSpec.ID)
 			}
