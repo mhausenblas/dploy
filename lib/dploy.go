@@ -75,7 +75,8 @@ func Init(workdir string) {
 		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
 	default:
 	}
-	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`\n", USER_MSG_INFO)
+	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. `\n", USER_MSG_INFO)
+	fmt.Printf("\tNext, you can run `dploy dryrun`\n")
 }
 
 // DryRun validates the app descriptor by checking if Marathon is reachable and also

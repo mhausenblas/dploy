@@ -30,26 +30,26 @@ func about() {
 	fmt.Fprint(os.Stderr, fmt.Sprintf("This is dploy version %s, using workdir %s\n", VERSION, workdir))
 	fmt.Fprint(os.Stderr, fmt.Sprintf("Please visit http://dploy.sh to learn more about me,\n"))
 	fmt.Fprint(os.Stderr, fmt.Sprintf("report issues and also how to contribute to this project.\n"))
-	fmt.Fprint(os.Stderr, strings.Repeat("=", 57))
+	fmt.Fprint(os.Stderr, strings.Repeat("=", 57), "\n")
 }
 
 func init() {
-	flag.BoolVar(&help, "help", false, "print help for a command and exit")
-	flag.BoolVar(&help, "h", false, "print help for a command and exit (shorthand)")
+	// flag.BoolVar(&help, "help", false, "print help for a command and exit")
 	flag.Usage = func() {
-		about()
-		fmt.Fprint(os.Stderr, "\nUsage: dploy <command> [workdir] [command-args]\n")
-		fmt.Fprint(os.Stderr, "Valid values for `command` are:\n")
+		fmt.Fprint(os.Stderr, "Usage: dploy <command> [workdir] [command-args]\n")
+		fmt.Fprint(os.Stderr, "\nValid values for `command` are:\n")
 		fmt.Fprint(os.Stderr, "\tinit ... creates a new app descriptor and inits `specs/`\n")
 		fmt.Fprint(os.Stderr, "\tdryrun ... validates app deployment using Marathon API\n")
 		fmt.Fprint(os.Stderr, "\trun ... launches the app using `dploy.app` and the content of `specs/`\n")
 		fmt.Fprint(os.Stderr, "\tdestroy ... tears down the app\n")
 		fmt.Fprint(os.Stderr, "\tls ... lists the app's resources\n")
-		fmt.Fprint(os.Stderr, "Note that `workdir` defaults to `./`, that is, the current directory.\n")
-		flag.PrintDefaults()
+		fmt.Fprint(os.Stderr, "\nThe `workdir` parameters defaults to `./`, that is, the current directory.\n")
+		// fmt.Fprint(os.Stderr, "\nValid values for `command-args` are:\n")
+		// flag.PrintDefaults()
 	}
 	flag.Parse()
 	if flag.NArg() < 1 {
+		about()
 		flag.Usage()
 		os.Exit(1)
 	} else {
@@ -61,6 +61,7 @@ func init() {
 }
 
 func main() {
+	about()
 	switch cmd {
 	case "init":
 		dploy.Init(workdir)
