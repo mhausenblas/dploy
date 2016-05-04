@@ -1,49 +1,67 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	dploy "github.com/mhausenblas/dploy/lib"
 	"os"
 	"strings"
 )
 
-var (
-	version = "0.5.3"
-	workdir = "./"
+const (
+	BANNER = `    .___        .__                  
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/     
+`
+	VERSION = "0.5.4"
 )
 
-func usage() {
-	about()
-	fmt.Println("\nUsage: dploy <command> [workdir] [command-args]\n")
-	fmt.Println("Valid values for `command` are:")
-	fmt.Println("\tinit ... creates a new app descriptor and inits `specs/`")
-	fmt.Println("\tdryrun ... validates app deployment using Marathon API")
-	fmt.Println("\trun ... launches the app using `dploy.app` and the content of `specs/`")
-	fmt.Println("\tdestroy ... tears down the app")
-	fmt.Println("\tls ... lists the app's resources")
-	fmt.Println("Note that `workdir` defaults to `./`, that is, the current directory.")
-}
+var (
+	cmd     string
+	workdir = "./"
+	help    bool
+)
 
 func about() {
-	fmt.Printf("This is dploy version %s\n", version)
-	fmt.Printf("\tUsing workdir: %s\n", workdir)
-	fmt.Println("\tPlease visit http://dploy.sh to learn more about me,")
-	fmt.Println("\treport issues and also how to contribute to this project.")
-	fmt.Println(strings.Repeat("=", 80))
+	fmt.Fprint(os.Stderr, BANNER)
+	fmt.Fprint(os.Stderr, fmt.Sprintf("This is dploy version %s, using workdir %s\n", VERSION, workdir))
+	fmt.Fprint(os.Stderr, fmt.Sprintf("Please visit http://dploy.sh to learn more about me,\n"))
+	fmt.Fprint(os.Stderr, fmt.Sprintf("report issues and also how to contribute to this project.\n"))
+	fmt.Fprint(os.Stderr, strings.Repeat("=", 57))
+}
+
+func init() {
+	flag.BoolVar(&help, "help", false, "print help for a command and exit")
+	flag.BoolVar(&help, "h", false, "print help for a command and exit (shorthand)")
+	flag.Usage = func() {
+		about()
+		fmt.Fprint(os.Stderr, "\nUsage: dploy <command> [workdir] [command-args]\n")
+		fmt.Fprint(os.Stderr, "Valid values for `command` are:\n")
+		fmt.Fprint(os.Stderr, "\tinit ... creates a new app descriptor and inits `specs/`\n")
+		fmt.Fprint(os.Stderr, "\tdryrun ... validates app deployment using Marathon API\n")
+		fmt.Fprint(os.Stderr, "\trun ... launches the app using `dploy.app` and the content of `specs/`\n")
+		fmt.Fprint(os.Stderr, "\tdestroy ... tears down the app\n")
+		fmt.Fprint(os.Stderr, "\tls ... lists the app's resources\n")
+		fmt.Fprint(os.Stderr, "Note that `workdir` defaults to `./`, that is, the current directory.\n")
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+	if flag.NArg() < 1 {
+		flag.Usage()
+		os.Exit(1)
+	} else {
+		cmd = flag.Args()[0]
+		if flag.NArg() > 1 {
+			workdir = flag.Args()[1]
+		}
+	}
 }
 
 func main() {
-	if len(os.Args) == 1 {
-		usage()
-		os.Exit(1)
-	} else {
-		if len(os.Args) > 2 {
-			workdir = os.Args[2]
-		}
-	}
-	about()
-
-	switch os.Args[1] {
+	switch cmd {
 	case "init":
 		dploy.Init(workdir)
 	case "dryrun":
@@ -55,8 +73,8 @@ func main() {
 	case "ls":
 		dploy.ListResources(workdir)
 	default:
-		fmt.Printf("%q is not a valid command\n", os.Args[1])
-		usage()
+		fmt.Fprint(os.Stderr, flag.Args()[0], " is not a valid command\n")
+		flag.Usage()
 		os.Exit(2)
 	}
 }
