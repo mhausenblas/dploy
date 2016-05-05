@@ -24,10 +24,10 @@
         <div><a class="header" href="#run">run</a></div>
         <div><a class="header" href="#destroy">destroy</a></div>
         <div><a class="header" href="#ls">ls</a></div>
-        <div><a href="#ps">ps</a></div>
+        <div><a class="header" href="#ps">ps</a></div>
         <div><a href="#update">update</a></div>
         <div><a href="#publish">publish</a></div>
-        <h2 class="header">Version: 0.5</h2>
+        <h2 class="header">Version: 0.6</h2>
       </header>
       <section>
         <h1>
@@ -61,12 +61,12 @@ For a more complete end-to-end example, you can check out the <a href="https://g
 $ go build
 </code></pre>
 
-<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.5.1" target="_new">download binaries</a> for Linux, OSX, and Windows or use it via Docker</p>
+<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.6.0" target="_new">download binaries</a> for Linux, OSX, and Windows or use it via Docker</p>
 
-<pre><code>$ docker pull mhausenblas/dploy:0.5.1
+<pre><code>$ docker pull mhausenblas/dploy:0.6.0
 
 # you can use dploy as follows then (note the usage of the volume):
-$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.5.1 init /tmp
+$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.0 init /tmp
 </code></pre>
 
 <h2>
@@ -112,29 +112,41 @@ Of course, you can also set the log output level on a per-run basis, using <code
 <pre><code>$ dploy init</code></pre>
 <p><strong>Examples</strong>:</p>
 <pre><code>$ dploy init
-This is dploy version 0.5.2
-	Using workdir: ./
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
 🗣	Initializing your app ...
 🙌	Done initializing your app:
 		Set up app descriptor in /Users/mhausenblas/tmp/dploy.app
 		Created app spec directory /Users/mhausenblas/tmp/specs
-🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs.
+	Next, you can run `dploy dryrun`
 </code></pre>
 <pre><code>$ DPLOY_EXAMPLES=all dploy init
-This is dploy version 0.5.2
-	Using workdir: ./
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
 🗣	Initializing your app ...
 🙌	Done initializing your app:
 		Set up app descriptor in /Users/mhausenblas/tmp/dploy.app
 		Created app spec directory /Users/mhausenblas/tmp/specs
 		Initialized app spec directory with some examples
-🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs. Next, you can run `dploy dryrun`
+🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs.
+	Next, you can run `dploy dryrun`
 </code></pre>
 
 <h4>
@@ -146,10 +158,16 @@ This is dploy version 0.5.2
 <pre><code>$ dploy dryrun</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy dryrun
-This is dploy version 0.5.1
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
+   .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
 🗣	Kicking the tires! Checking Marathon connection, descriptor and app specs ...
 🙌	Found DC/OS Marathon instance
 🙌	Found an app descriptor
@@ -165,13 +183,19 @@ This is dploy version 0.5.1
 <pre><code>$ dploy run</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy run
-This is dploy version 0.5.1
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
+   .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
 🗣	OK, let's rock and roll! Trying to launch your app ...
 🙌	Launched your app!
-🗣	Now you can use `dploy ls` to list resources or `dploy destroy` to tear down the app again.
+🗣	Now you can use `dploy ps` to list processes or `dploy destroy` to tear down the app again.
 </code></pre>
 <h4>
 <a id="destroy" class="anchor" href="#dploy-destroy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy destroy</h4>
@@ -182,10 +206,16 @@ This is dploy version 0.5.1
 <pre><code>$ dploy destroy</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy destroy
-This is dploy version 0.5.1
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
+   .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
 🙌	Destroyed your app!
 </code></pre>
 <h4>
@@ -197,19 +227,55 @@ This is dploy version 0.5.1
 <pre><code>$ dploy ls</code></pre>
 <p><strong>Example</strong>:</p>
 <pre><code>$ dploy ls
-This is dploy version 0.5.1
-	Please visit http://dploy.sh to learn more about me,
-	report issues and also how to contribute to this project.
-================================================================================
-🗣	Resources of your app CHANGEME ...
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
+🗣	Resources of your app mh9test ...
 
- RESOURCE     LOCATION               STATUS
+ RESOURCE             TYPE      LOCATION
 
- Marathon     http://localhost:8080  💚	online
- /helloworld  specs/helloworld.json  💔	offline
- /webserver   specs/nginx.json       💔	offline
+ Marathon             platform  http://localhost:8080
+ /dployex             group     specs/buzz.json
+ /dployex/helloworld  app       specs/helloworld.json
+ /webserver           app       specs/nginx.json
+
 </code></pre>
+<h4>
+<a id="ps" class="anchor" href="#dploy-ps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy ps</h4>
+<p>
+    This command lists runtime properties of the app using the Marathon API.
+</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy ps</code></pre>
+<p><strong>Example</strong>:</p>
+<pre><code>$ dploy ps
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.0, using workdir ./
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
+🗣	Runtime properties of your app mh9test ...
 
+ PROCESS              CMD                             IMAGE      INSTANCES  CPU  MEM (MB)  STATUS
+
+ /dployex/buzz/con    curl -OsL https://raw.githu...  python:3   1          0.5  100       online	💚
+ /dployex/buzz/gen    echo cloud native hyperscal...  python:3   1          0.5  32        online	💚
+ /dployex/helloworld  env >index.html && python3 ...  python:3   1          0.1  32        online	💚
+ /webserver           N/A                             nginx:1.9  1          0.5  100       online	💚
+
+</code></pre>
       </section>
       <footer>
         <p><small>Maintained by <a href="https://github.com/mhausenblas">mhausenblas</a> and hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
