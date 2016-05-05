@@ -26,6 +26,7 @@ const (
 	RESOURCETYPE_PLATFORM    string        = "platform"
 	RESOURCETYPE_APP         string        = "app"
 	RESOURCETYPE_GROUP       string        = "group"
+	CMD_TRUNCATE             int           = 27
 	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
 	USER_MSG_SUCCESS         string        = "🙌"
@@ -179,7 +180,7 @@ func ListResources(workdir string) {
 						resType = RESOURCETYPE_APP
 						appID = appSpec.ID
 						if !strings.HasPrefix(appSpec.ID, "/") {
-							appID += "/" + appSpec.ID
+							appID = "/" + appSpec.ID
 						}
 					} else {
 						resType = RESOURCETYPE_GROUP
@@ -228,12 +229,28 @@ func ListRuntimeProperties(workdir string) {
 				appID += "/"
 			}
 			appInstances := strconv.Itoa(*app.Instances)
-			log.WithFields(log.Fields{"cmd": "ps"}).Debug("# of instances ", appInstances)
-			row := []string{appID, appInstances, appStatus}
+			appCmd := ""
+			if app.Cmd != nil {
+				appCmd = *app.Cmd
+				if len(appCmd) > CMD_TRUNCATE {
+					appCmd = appCmd[:CMD_TRUNCATE] + "..."
+				}
+			} else {
+				appCmd = "N/A"
+			}
+			appImage := ""
+			if len(app.Container.Docker.Image) > 0 {
+				appImage = app.Container.Docker.Image
+			} else {
+				appImage = "N/A"
+			}
+			appCPU := strconv.FormatFloat(app.CPUs, 'f', -1, 64)
+			appMem := strconv.FormatFloat(*app.Mem, 'f', -1, 64)
+			row := []string{appID, appCmd, appImage, appInstances, appCPU, appMem, appStatus}
 			table.Append(row)
 		}
 		fmt.Printf("%s\tRuntime properties of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-		table.SetHeader([]string{"PROCESS", "INSTANCES", "STATUS"})
+		table.SetHeader([]string{"PROCESS", "CMD", "IMAGE", "INSTANCES", "CPU", "MEM (MB)", "STATUS"})
 		table.SetCenterSeparator("")
 		table.SetColumnSeparator("")
 		table.SetRowSeparator("")
