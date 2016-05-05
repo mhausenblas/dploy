@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -22,6 +23,9 @@ const (
 	MARATHON_APP_SPEC_DIR    string        = "specs/"
 	MARATHON_APP_SPEC_EXT    string        = ".json"
 	MARATHON_LABEL           string        = "DPLOY"
+	RESOURCETYPE_PLATFORM    string        = "platform"
+	RESOURCETYPE_APP         string        = "app"
+	RESOURCETYPE_GROUP       string        = "group"
 	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
 	USER_MSG_SUCCESS         string        = "🙌"
@@ -76,7 +80,7 @@ func Init(workdir string) {
 		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
 	default:
 	}
-	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs. `\n", USER_MSG_INFO)
+	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs.\n", USER_MSG_INFO)
 	fmt.Printf("\tNext, you can run `dploy dryrun`\n")
 }
 
@@ -116,7 +120,7 @@ func DryRun(workdir string) {
 			os.Exit(3)
 		}
 	}
-	fmt.Printf("%s\tNow you can launch your app using `dploy run`\n", USER_MSG_INFO)
+	fmt.Printf("%s\tNow you can launch your app using `dploy run` or `dploy ls` to list resources.\n", USER_MSG_INFO)
 }
 
 // Run launches the app as defined in the descriptor and the app specs.
@@ -131,7 +135,7 @@ func Run(workdir string) {
 	}
 	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
-	fmt.Printf("%s\tNow you can use `dploy ls` to list resources or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
+	fmt.Printf("%s\tNow you can use `dploy ps` to list processes or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
 }
 
 // Destroy tears down the app.
@@ -164,34 +168,31 @@ func ListResources(workdir string) {
 	} else {
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			table := tw.NewWriter(os.Stdout)
-			row := []string{"Marathon", "PLATFORM", marathonURL.String(), SYSTEM_MSG_ONLINE}
+			row := []string{"Marathon", RESOURCETYPE_PLATFORM, marathonURL.String()}
 			table.Append(row)
 			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
 				for _, specFilename := range appSpecs {
 					appSpec, groupAppSpec := readAppSpec(appDescriptor.AppName, specFilename)
 					appID := ""
 					resType := ""
-					appStatus := ""
 					if appSpec != nil {
-						appStatus = marathonAppStatus(*marathonURL, appSpec.ID, false)
-						resType = "APP"
+						resType = RESOURCETYPE_APP
 						appID = appSpec.ID
 						if !strings.HasPrefix(appSpec.ID, "/") {
-							appID = "/" + appSpec.ID
+							appID += "/" + appSpec.ID
 						}
 					} else {
-						appStatus = marathonAppStatus(*marathonURL, groupAppSpec.ID, true)
-						resType = "GROUP"
+						resType = RESOURCETYPE_GROUP
 						appID = groupAppSpec.ID
 						if !strings.HasPrefix(groupAppSpec.ID, "/") {
 							appID = "/" + groupAppSpec.ID
 						}
 					}
-					row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1], appStatus}
+					row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
 					table.Append(row)
 				}
 				fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-				table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION", "STATUS"})
+				table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION"})
 				table.SetCenterSeparator("")
 				table.SetColumnSeparator("")
 				table.SetRowSeparator("")
@@ -218,8 +219,29 @@ func ListRuntimeProperties(workdir string) {
 		log.Fatal(err)
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
-	fmt.Printf("%s\tRuntime properties of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-	for _, app := range myApps {
-		fmt.Printf("%s\n", app.ID)
+	table := tw.NewWriter(os.Stdout)
+	if myApps != nil && len(myApps) > 0 {
+		for _, app := range myApps {
+			appID := app.ID
+			appStatus := marathonAppStatus(*marathonURL, appID, false)
+			if !strings.HasPrefix(appID, "/") {
+				appID += "/"
+			}
+			appInstances := strconv.Itoa(*app.Instances)
+			log.WithFields(log.Fields{"cmd": "ps"}).Debug("# of instances ", appInstances)
+			row := []string{appID, appInstances, appStatus}
+			table.Append(row)
+		}
+		fmt.Printf("%s\tRuntime properties of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
+		table.SetHeader([]string{"PROCESS", "INSTANCES", "STATUS"})
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetAlignment(tw.ALIGN_LEFT)
+		table.SetHeaderAlignment(tw.ALIGN_LEFT)
+		table.Render()
+	} else {
+		fmt.Printf("%s\tDidn't find any processes belonging to your app\n", USER_MSG_PROBLEM)
+		os.Exit(3)
 	}
 }
