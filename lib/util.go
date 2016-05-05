@@ -2,8 +2,10 @@ package dploy
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	marathon "github.com/gambol99/go-marathon"
+	tw "github.com/olekukonko/tablewriter"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
@@ -141,8 +143,68 @@ func labelGroup(group *marathon.Group, label string) {
 }
 
 func labelApp(app *marathon.Application, label string) {
-	log.WithFields(log.Fields{"marathon": "label_group"}).Debug("Owning app ", app.ID)
+	log.WithFields(log.Fields{"marathon": "label_app"}).Debug("Owning app ", app.ID)
 	app.AddLabel(MARATHON_LABEL, label)
+}
+
+func renderAppResources(appDescriptor DployApp, workdir string) {
+	table := tw.NewWriter(os.Stdout)
+	row := []string{"Marathon", RESOURCETYPE_PLATFORM, appDescriptor.MarathonURL}
+	table.Append(row)
+	if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
+		for _, specFilename := range appSpecs {
+			appSpec, groupAppSpec := readAppSpec(appDescriptor.AppName, specFilename)
+			if appSpec != nil { // we have an app
+				renderApp(appSpec, specFilename, "", table)
+			} else { // we have a group
+				renderGroup(groupAppSpec, specFilename, "", table)
+			}
+		}
+		fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
+		table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION"})
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetAlignment(tw.ALIGN_LEFT)
+		table.SetHeaderAlignment(tw.ALIGN_LEFT)
+		table.Render()
+	} else {
+		fmt.Printf("%s\tDidn't find any app specs in %s \n", USER_MSG_PROBLEM, MARATHON_APP_SPEC_DIR)
+		os.Exit(3)
+	}
+}
+
+func renderApp(app *marathon.Application, specFilename string, path string, table *tw.Table) {
+	appID := app.ID
+	if !strings.HasPrefix(app.ID, "/") {
+		appID = path + "/" + app.ID
+	}
+	log.WithFields(log.Fields{"render": "app"}).Debug("In app ", app.ID)
+	resType := RESOURCETYPE_APP
+	row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
+	table.Append(row)
+}
+
+func renderGroup(group *marathon.Group, specFilename string, path string, table *tw.Table) {
+	resType := RESOURCETYPE_GROUP
+	groupID := group.ID
+	if !strings.HasPrefix(group.ID, "/") {
+		groupID = path + "/" + group.ID
+	}
+	path = groupID
+	log.WithFields(log.Fields{"render": "group"}).Debug("At node ", path)
+	row := []string{groupID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
+	table.Append(row)
+	if group.Apps != nil {
+		for _, app := range group.Apps {
+			renderApp(app, specFilename, path, table)
+		}
+	}
+	if group.Groups != nil {
+		for _, g := range group.Groups {
+			renderGroup(g, specFilename, path, table)
+		}
+	}
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {

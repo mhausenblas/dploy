@@ -157,10 +157,6 @@ func Destroy(workdir string) {
 func ListResources(workdir string) {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
-	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
-	if err != nil {
-		log.Fatal(err)
-	}
 	specsDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
 		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
@@ -168,42 +164,7 @@ func ListResources(workdir string) {
 		os.Exit(3)
 	} else {
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
-			table := tw.NewWriter(os.Stdout)
-			row := []string{"Marathon", RESOURCETYPE_PLATFORM, marathonURL.String()}
-			table.Append(row)
-			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
-				for _, specFilename := range appSpecs {
-					appSpec, groupAppSpec := readAppSpec(appDescriptor.AppName, specFilename)
-					appID := ""
-					resType := ""
-					if appSpec != nil {
-						resType = RESOURCETYPE_APP
-						appID = appSpec.ID
-						if !strings.HasPrefix(appSpec.ID, "/") {
-							appID = "/" + appSpec.ID
-						}
-					} else {
-						resType = RESOURCETYPE_GROUP
-						appID = groupAppSpec.ID
-						if !strings.HasPrefix(groupAppSpec.ID, "/") {
-							appID = "/" + groupAppSpec.ID
-						}
-					}
-					row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
-					table.Append(row)
-				}
-				fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-				table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION"})
-				table.SetCenterSeparator("")
-				table.SetColumnSeparator("")
-				table.SetRowSeparator("")
-				table.SetAlignment(tw.ALIGN_LEFT)
-				table.SetHeaderAlignment(tw.ALIGN_LEFT)
-				table.Render()
-			} else {
-				fmt.Printf("%s\tDidn't find any app specs in %s \n", USER_MSG_PROBLEM, MARATHON_APP_SPEC_DIR)
-				os.Exit(3)
-			}
+			renderAppResources(appDescriptor, workdir)
 		} else {
 			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
 			os.Exit(3)
