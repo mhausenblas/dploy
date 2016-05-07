@@ -25,9 +25,9 @@
         <div><a class="header" href="#destroy">destroy</a></div>
         <div><a class="header" href="#ls">ls</a></div>
         <div><a class="header" href="#ps">ps</a></div>
-        <div><a href="#scale">scale</a></div>
+        <div><a class="header" href="#scale">scale</a></div>
         <div><a href="#publish">publish</a></div>
-        <h2 class="header">Version: 0.6</h2>
+        <h2 class="header">Version: 0.7</h2>
       </header>
       <section>
         <h1>
@@ -298,6 +298,45 @@ report issues and also how to contribute to this project.
  /dployex/helloworld  env >index.html &...  python:3   1          10.0.0.4:8948   0.1  32        online	💚
  /dployex/buzz/gen    echo cloud native...  python:3   1          10.0.0.4:17172  0.5  32        online	💚
  /dployex/buzz/con    curl -OsL https:/...  python:3   1          10.0.0.4:29246  0.5  100       online	💚
+</code></pre>
+<h4>
+<a id="scale" class="anchor" href="#dploy-scale" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy scale</h4>
+<p>
+    This command scales the instances of a particular µS of the app.
+</p>
+<p><strong>Usage</strong>:</p>
+<pre><code>$ dploy -pid=&lt;PID&gt; [-instances=NUMBER] scale</code></pre>
+<p>With following arguments:</p>
+    <ul>
+        <li>[REQUIRED] <code>-pid</code> … the process ID (PID) of the µS (aka the Marathon app ID, e.g., <code>/webserver</code>)</li>
+        <li>[OPTIONAL] <code>-instances</code> … an integer specifying the number of instances to scale the µS to (default is <code>0</code>, that is, suspend)</li>
+    </ul>
+<p><strong>Examples</strong>:</p>
+<pre><code>~/tmp $ dploy -pid=/dployex/helloworld -instances=2 scale
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.7.0, using workspace [/Users/mhausenblas/tmp]
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
+🙌	Successfully scaled app /dployex/helloworld to 2 instances
+</code></pre>
+<pre><code>~/tmp $ dploy -pid=/webserver scale
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.7.0, using workspace [/Users/mhausenblas/tmp]
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
+🙌	Successfully scaled app /webserver to 0 instances
 </code></pre>
       </section>
       <footer>
