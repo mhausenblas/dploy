@@ -19,10 +19,10 @@ Download binaries for Linux, OSX, and Windows:
 
 Via Docker:
 
-    $ docker pull mhausenblas/dploy:0.6.0
+    $ docker pull mhausenblas/dploy:0.6.2
     
     # you can use dploy as follows then (note the usage of the volume):
-    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.0 init /tmp
+    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.2 -workspace=/tmp init
 
 ## Dependencies
 
@@ -33,7 +33,7 @@ Via Docker:
 
 ## Commands
 
-- [x] `dploy init` … creates a new µS-based app for you
+- [x] `dploy init` … creates a new µS-based app
 - [x] `dploy dryrun` … validates deployment of the µS-based app
 - [x] `dploy run`… launches the µS-based app using the Marathon API
 - [x] `dploy destroy`… tears down µS-based app using the Marathon API
@@ -44,7 +44,7 @@ Via Docker:
 
 Additional things planned:
 
-- Expose metrics via `ps -history`
+- Expose metrics via `dploy -all ps`
 - Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
 - tracing using Zipkin: [Mesos scheduler](http://elodina.github.io/zipkin-mesos-framework/) and [Go lib](http://elodina.github.io/go-zipkin/)
 - advanced µS examples using linkerd, VAMP
