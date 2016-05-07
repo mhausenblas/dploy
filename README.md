@@ -12,12 +12,12 @@ From source (will get you always the latest version):
 
     $ go get github.com/mhausenblas/dploy
 
-Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/releases/tag/0.6.2) for Linux, OSX, and Windows or use it via Docker:
+Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/releases/tag/0.7.0) for Linux, OSX, and Windows or use it via Docker:
 
-    $ docker pull mhausenblas/dploy:0.6.2
+    $ docker pull mhausenblas/dploy:0.7.0
     
     # you can use dploy as follows then (note the usage of the volume):
-    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.2 -workspace=/tmp init
+    $ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.7.0 -workspace=/tmp init
 
 ## Dependencies
 
