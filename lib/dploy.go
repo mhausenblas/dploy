@@ -26,7 +26,7 @@ const (
 	RESOURCETYPE_PLATFORM    string        = "platform"
 	RESOURCETYPE_APP         string        = "app"
 	RESOURCETYPE_GROUP       string        = "group"
-	CMD_TRUNCATE             int           = 27
+	CMD_TRUNCATE             int           = 17
 	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
 	USER_MSG_SUCCESS         string        = "🙌"
@@ -47,7 +47,7 @@ type DployApp struct {
 // in the workdir specified as well as copies in example app specs.
 // For example:
 //  dploy.Init("../.")
-func Init(workdir string) {
+func Init(workdir string, showAll bool) {
 	setLogLevel()
 	ensureWorkDir(workdir)
 	fmt.Printf("%s\tInitializing your app ...\n", USER_MSG_INFO)
@@ -87,7 +87,7 @@ func Init(workdir string) {
 
 // DryRun validates the app descriptor by checking if Marathon is reachable and also
 // checks if the app spec directory is present, incl. at least one Marathon app spec.
-func DryRun(workdir string) {
+func DryRun(workdir string, showAll bool) {
 	setLogLevel()
 	fmt.Printf("%s\tKicking the tires! Checking Marathon connection, descriptor and app specs ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
@@ -126,7 +126,7 @@ func DryRun(workdir string) {
 
 // Run launches the app as defined in the descriptor and the app specs.
 // It scans the `specs/` directory for Marathon app specs and launches them using the Marathon API.
-func Run(workdir string) {
+func Run(workdir string, showAll bool) {
 	setLogLevel()
 	fmt.Printf("%s\tOK, let's rock and roll! Trying to launch your app ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
@@ -141,7 +141,7 @@ func Run(workdir string) {
 
 // Destroy tears down the app.
 // It scans the `specs/` directory for Marathon app specs and deletes apps using the Marathon API.
-func Destroy(workdir string) {
+func Destroy(workdir string, showAll bool) {
 	setLogLevel()
 	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
@@ -154,7 +154,7 @@ func Destroy(workdir string) {
 }
 
 // ListResources lists the resource definitions of the app.
-func ListResources(workdir string) {
+func ListResources(workdir string, showAll bool) {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	specsDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
@@ -173,7 +173,7 @@ func ListResources(workdir string) {
 }
 
 // ListRuntimeProperties lists runtime properties of the app.
-func ListRuntimeProperties(workdir string) {
+func ListRuntimeProperties(workdir string, showAll bool) {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
@@ -182,7 +182,12 @@ func ListRuntimeProperties(workdir string) {
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
 	table := tw.NewWriter(os.Stdout)
-	table.SetHeader([]string{"PROCESS", "CMD", "IMAGE", "INSTANCES", "CPU", "MEM (MB)", "STATUS"})
+	if showAll {
+		table.SetHeader([]string{"PID", "CMD", "IMAGE", "INSTANCES", "ENDPOINTS", "CPU", "MEM (MB)", "STATUS"})
+	} else {
+		table.SetHeader([]string{"PID", "INSTANCES", "ENDPOINTS", "STATUS"})
+
+	}
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
@@ -192,30 +197,41 @@ func ListRuntimeProperties(workdir string) {
 	go showSpinner(100 * time.Millisecond)
 	if myApps != nil && len(myApps) > 0 {
 		for _, app := range myApps {
+			client := marathonClient(*marathonURL)
+			row := []string{}
 			appID := app.ID
-			appStatus := marathonAppStatus(*marathonURL, app)
+			appRuntime, err := client.Application(appID)
+			if err != nil {
+				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " status not available")
+			}
 			if !strings.HasPrefix(appID, "/") {
 				appID += "/"
 			}
 			appInstances := strconv.Itoa(*app.Instances)
-			appCmd := ""
-			if app.Cmd != nil {
-				appCmd = *app.Cmd
-				if len(appCmd) > CMD_TRUNCATE {
-					appCmd = appCmd[:CMD_TRUNCATE] + "..."
+			appEndpoints := listEndpoints(appRuntime)
+			appStatus := marathonAppStatus(client, appRuntime)
+			if showAll {
+				appCmd := ""
+				if app.Cmd != nil {
+					appCmd = *app.Cmd
+					if len(appCmd) > CMD_TRUNCATE {
+						appCmd = appCmd[:CMD_TRUNCATE] + "..."
+					}
+				} else {
+					appCmd = "N/A"
 				}
+				appImage := ""
+				if len(app.Container.Docker.Image) > 0 {
+					appImage = app.Container.Docker.Image
+				} else {
+					appImage = "N/A"
+				}
+				appCPU := strconv.FormatFloat(app.CPUs, 'f', -1, 64)
+				appMem := strconv.FormatFloat(*app.Mem, 'f', -1, 64)
+				row = []string{appID, appCmd, appImage, appInstances, appEndpoints, appCPU, appMem, appStatus}
 			} else {
-				appCmd = "N/A"
+				row = []string{appID, appInstances, appEndpoints, appStatus}
 			}
-			appImage := ""
-			if len(app.Container.Docker.Image) > 0 {
-				appImage = app.Container.Docker.Image
-			} else {
-				appImage = "N/A"
-			}
-			appCPU := strconv.FormatFloat(app.CPUs, 'f', -1, 64)
-			appMem := strconv.FormatFloat(*app.Mem, 'f', -1, 64)
-			row := []string{appID, appCmd, appImage, appInstances, appCPU, appMem, appStatus}
 			table.Append(row)
 		}
 		hideSpinner()

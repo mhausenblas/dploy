@@ -49,6 +49,7 @@ func ensureWorkDir(workdirPath string) {
 	if _, err := os.Stat(workDir); os.IsNotExist(err) {
 		os.MkdirAll(workdirPath, 0755)
 	}
+	log.WithFields(log.Fields{"workspace": "check"}).Info("Made sure ", workDir, " exists ")
 }
 
 func fetchExample(example string, specsDir string) {
@@ -197,7 +198,7 @@ func renderApp(app *marathon.Application, specFilename string, path string, tabl
 	}
 	log.WithFields(log.Fields{"render": "app"}).Debug("In app ", app.ID)
 	resType := RESOURCETYPE_APP
-	row := []string{appID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
+	row := []string{appID, resType, "./" + MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
 	table.Append(row)
 }
 
@@ -209,7 +210,7 @@ func renderGroup(group *marathon.Group, specFilename string, path string, table 
 	}
 	path = groupID
 	log.WithFields(log.Fields{"render": "group"}).Debug("At node ", path)
-	row := []string{groupID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
+	row := []string{groupID, resType, "./" + MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
 	table.Append(row)
 	// process the rest of the members of this branch:
 	if group.Apps != nil {
@@ -222,6 +223,15 @@ func renderGroup(group *marathon.Group, specFilename string, path string, table 
 			renderGroup(g, specFilename, path, table)
 		}
 	}
+}
+
+func listEndpoints(app *marathon.Application) string {
+	var endpoints []string
+	for _, task := range app.Tasks {
+		log.WithFields(log.Fields{"endpoints": "list"}).Debug("Inspecting task ", task)
+		endpoints = append(endpoints, fmt.Sprintf("%s:%d", task.Host, task.Ports[0]))
+	}
+	return strings.Join(endpoints[:], " ")
 }
 
 func marathonClient(marathonURL url.URL) marathon.Marathon {
@@ -243,28 +253,20 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
-func marathonAppStatus(marathonURL url.URL, app marathon.Application) string {
-	client := marathonClient(marathonURL)
-	log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", app)
-
-	appRuntime, err := client.Application(app.ID)
-	if err != nil {
-		log.WithFields(log.Fields{"marathon": "app_status"}).Error("Application ", appRuntime.ID, " not running")
-		return SYSTEM_MSG_OFFLINE
-	} else {
-		if appRuntime.Tasks != nil && len(appRuntime.Tasks) > 0 {
-			health, _ := client.ApplicationOK(appRuntime.ID)
-			if health {
-				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is healthy")
-				return SYSTEM_MSG_ONLINE
-			} else {
-				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is NOT healthy")
-				return SYSTEM_MSG_OFFLINE
-			}
+func marathonAppStatus(client marathon.Marathon, appRuntime *marathon.Application) string {
+	log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime)
+	if appRuntime.Tasks != nil && len(appRuntime.Tasks) > 0 {
+		health, _ := client.ApplicationOK(appRuntime.ID)
+		if health {
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is healthy")
+			return SYSTEM_MSG_ONLINE
 		} else {
-			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " NO TASKS found")
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is NOT healthy")
 			return SYSTEM_MSG_OFFLINE
 		}
+	} else {
+		log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " NO TASKS found")
+		return SYSTEM_MSG_OFFLINE
 	}
 }
 
