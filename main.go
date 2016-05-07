@@ -16,13 +16,13 @@ const (
 \____ | |   __/ |____/ \____/ / ____|
      \/ |__|                  \/     
 `
-	VERSION = "0.6.1"
+	VERSION = "0.6.2"
 )
 
 var (
 	cmd     string
 	workdir = "./"
-	help    bool
+	history bool
 )
 
 func about() {
@@ -34,7 +34,7 @@ func about() {
 }
 
 func init() {
-	// flag.BoolVar(&help, "help", false, "print help for a command and exit")
+	flag.BoolVar(&history, "history", false, "output complete process history in JSON")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, "Usage: dploy <command> [workdir] [command-args]\n")
 		fmt.Fprint(os.Stderr, "\nValid values for `command` are:\n")

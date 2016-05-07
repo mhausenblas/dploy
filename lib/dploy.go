@@ -182,10 +182,18 @@ func ListRuntimeProperties(workdir string) {
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
 	table := tw.NewWriter(os.Stdout)
+	table.SetHeader([]string{"PROCESS", "CMD", "IMAGE", "INSTANCES", "CPU", "MEM (MB)", "STATUS"})
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetAlignment(tw.ALIGN_LEFT)
+	table.SetHeaderAlignment(tw.ALIGN_LEFT)
+	fmt.Printf("%s\tQuerying Marathon\n", USER_MSG_INFO)
+	go showSpinner(100 * time.Millisecond)
 	if myApps != nil && len(myApps) > 0 {
 		for _, app := range myApps {
 			appID := app.ID
-			appStatus := marathonAppStatus(*marathonURL, appID, false)
+			appStatus := marathonAppStatus(*marathonURL, app)
 			if !strings.HasPrefix(appID, "/") {
 				appID += "/"
 			}
@@ -210,13 +218,8 @@ func ListRuntimeProperties(workdir string) {
 			row := []string{appID, appCmd, appImage, appInstances, appCPU, appMem, appStatus}
 			table.Append(row)
 		}
-		fmt.Printf("%s\tRuntime properties of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
-		table.SetHeader([]string{"PROCESS", "CMD", "IMAGE", "INSTANCES", "CPU", "MEM (MB)", "STATUS"})
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetAlignment(tw.ALIGN_LEFT)
-		table.SetHeaderAlignment(tw.ALIGN_LEFT)
+		hideSpinner()
+		fmt.Printf("%s\tRuntime properties of your app [%s]:\n", USER_MSG_INFO, appDescriptor.AppName)
 		table.Render()
 	} else {
 		fmt.Printf("%s\tDidn't find any processes belonging to your app\n", USER_MSG_PROBLEM)

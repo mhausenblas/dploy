@@ -39,12 +39,12 @@ Via Docker:
 - [x] `dploy destroy`… tears down µS-based app using the Marathon API
 - [x] `dploy ls` … lists the resources of the µS-based app
 - [x] `dploy ps` … lists runtime properties of the µS-based app
-- [ ] `dploy update`… updates properties of the µS-based app
+- [ ] `dploy scale`… scales the µS-based app
 - [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe
 
 Additional things planned:
 
-- Expose metrics via `ps -history -json`
+- Expose metrics via `ps -history`
 - Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
 - tracing using Zipkin: [Mesos scheduler](http://elodina.github.io/zipkin-mesos-framework/) and [Go lib](http://elodina.github.io/go-zipkin/)
 - advanced µS examples using linkerd, VAMP

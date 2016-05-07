@@ -28,6 +28,22 @@ func setLogLevel() {
 	}
 }
 
+func showSpinner(delay time.Duration) {
+	// cursor manipulation see http://shiroyasha.io/escape-sequences-a-quick-guide.html
+	fmt.Printf("\033[1A")
+	fmt.Printf("\033[2C")
+	for {
+		for _, r := range `-\|/` {
+			fmt.Printf("\r%c", r)
+			time.Sleep(delay)
+		}
+	}
+}
+
+func hideSpinner() {
+	fmt.Printf("\033[2D")
+}
+
 func ensureWorkDir(workdirPath string) {
 	workDir, _ := filepath.Abs(workdirPath)
 	if _, err := os.Stat(workDir); os.IsNotExist(err) {
@@ -160,7 +176,7 @@ func renderAppResources(appDescriptor DployApp, workdir string) {
 				renderGroup(groupAppSpec, specFilename, "", table)
 			}
 		}
-		fmt.Printf("%s\tResources of your app %s ...\n", USER_MSG_INFO, appDescriptor.AppName)
+		fmt.Printf("%s\tResources of your app [%s]:\n", USER_MSG_INFO, appDescriptor.AppName)
 		table.SetHeader([]string{"RESOURCE", "TYPE", "LOCATION"})
 		table.SetCenterSeparator("")
 		table.SetColumnSeparator("")
@@ -189,7 +205,7 @@ func renderGroup(group *marathon.Group, specFilename string, path string, table 
 	resType := RESOURCETYPE_GROUP
 	groupID := group.ID
 	if !strings.HasPrefix(group.ID, "/") {
-		groupID = path + "/" + group.ID
+		groupID = "📂\t" + path + "/" + group.ID
 	}
 	path = groupID
 	log.WithFields(log.Fields{"render": "group"}).Debug("At node ", path)
@@ -226,40 +242,27 @@ func marathonGetInfo(marathonURL url.URL) *marathon.Info {
 	return info
 }
 
-func marathonAppStatus(marathonURL url.URL, appID string, isGroup bool) string {
+func marathonAppStatus(marathonURL url.URL, app marathon.Application) string {
 	client := marathonClient(marathonURL)
+	log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", app)
 
-	if isGroup {
-		gExists, _ := client.HasGroup(appID)
-		if !gExists {
-			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Group ", appID, " does not exist")
-			return SYSTEM_MSG_OFFLINE
-		} else {
-			_, err := client.Group(appID)
-			if err != nil {
-				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Group ", appID, " not running")
-				return SYSTEM_MSG_OFFLINE
-			} else {
-				return SYSTEM_MSG_ONLINE
-			}
-		}
+	appRuntime, err := client.Application(app.ID)
+	if err != nil {
+		log.WithFields(log.Fields{"marathon": "app_status"}).Error("Application ", appRuntime.ID, " not running")
+		return SYSTEM_MSG_OFFLINE
 	} else {
-		details, err := client.Application(appID)
-		if err != nil {
-			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appID, " not running")
-			return SYSTEM_MSG_OFFLINE
-		} else {
-			if details.Tasks != nil && len(details.Tasks) > 0 {
-				health, _ := client.ApplicationOK(details.ID)
-				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", details.ID, " health status: ", health)
-				if health {
-					return SYSTEM_MSG_ONLINE
-				} else {
-					return SYSTEM_MSG_OFFLINE
-				}
+		if appRuntime.Tasks != nil && len(appRuntime.Tasks) > 0 {
+			health, _ := client.ApplicationOK(appRuntime.ID)
+			if health {
+				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is healthy")
+				return SYSTEM_MSG_ONLINE
 			} else {
+				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " is NOT healthy")
 				return SYSTEM_MSG_OFFLINE
 			}
+		} else {
+			log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " NO TASKS found")
+			return SYSTEM_MSG_OFFLINE
 		}
 	}
 }
@@ -288,6 +291,7 @@ func marathonAppRuntime(marathonURL url.URL, dployAppName string) []marathon.App
 func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
+	go showSpinner(100 * time.Millisecond)
 	for _, specFilename := range appSpecs {
 		appSpec, group := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
@@ -312,17 +316,19 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 			client.WaitOnGroup(group.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
+	hideSpinner()
 }
 
 func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
+	go showSpinner(100 * time.Millisecond)
 	for _, specFilename := range appSpecs {
 		appSpec, groupAppSpec := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
 			_, err := client.DeleteApplication(appSpec.ID)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "delete_app"}).Error("Failed to delete application ", appSpec.ID, " due to ", err)
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Failed to delete application ", appSpec.ID, " due to ", err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted app ", appSpec.ID)
 			}
@@ -330,11 +336,12 @@ func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string
 		} else {
 			_, err := client.DeleteGroup(groupAppSpec.ID)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "delete_app"}).Error("Failed to delete group ", groupAppSpec.ID, " due to ", err)
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Failed to delete group ", groupAppSpec.ID, " due to ", err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted group ", groupAppSpec.ID)
 			}
 			client.WaitOnDeployment(groupAppSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
+	hideSpinner()
 }
