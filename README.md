@@ -34,7 +34,7 @@ Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/
 - [x] `dploy destroy`… tears down µS-based app using the Marathon API
 - [x] `dploy ls` … lists the resources of the µS-based app
 - [x] `dploy ps` … lists runtime properties of the µS-based app
-- [ ] `dploy scale`… scales the µS-based app
+- [x] `dploy scale`… scales the µS-based app
 - [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe
 
 Additional things planned:

@@ -32,7 +32,7 @@ const (
 	USER_MSG_SUCCESS         string        = "🙌"
 	USER_MSG_PROBLEM         string        = "🙁"
 	USER_MSG_INFO            string        = "🗣"
-	SYSTEM_MSG_ONLINE        string        = "online\t💚"
+	SYSTEM_MSG_ONLINE        string        = "online \t💚"
 	SYSTEM_MSG_OFFLINE       string        = "offline\t💔"
 )
 
@@ -243,7 +243,7 @@ func ListRuntimeProperties(workdir string, showAll bool) {
 	}
 }
 
-// Scale sets the number of isntances of a particular µS identified through pid.
+// Scale sets the number of instances of a particular µS identified through pid.
 func Scale(workdir string, showAll bool, pid string, instances int) {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
