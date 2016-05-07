@@ -63,10 +63,10 @@ $ go build
 
 <p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.6.0" target="_new">download binaries</a> for Linux, OSX, and Windows or use it via Docker</p>
 
-<pre><code>$ docker pull mhausenblas/dploy:0.6.0
+<pre><code>$ docker pull mhausenblas/dploy:0.6.2
 
 # you can use dploy as follows then (note the usage of the volume):
-$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.0 init /tmp
+$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.6.2 -workspace=/tmp init
 </code></pre>
 
 <h2>
@@ -92,21 +92,25 @@ Of course, you can also set the log output level on a per-run basis, using <code
 <h3>
 <a id="workflow" class="anchor" href="#workflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Workflow</h3>
 
-<p>The supported workflow comprises 8 commands, with the following state transitions:</p>
+<p>The supported workflow comprises the following eight commands, with the following state transitions:</p>
 <img src="images/dploy-states.png" alt="dploy state machine" />
 <p>Usage:</p>    
-<pre><code>$ dploy &lt;command&gt; [workdir] [command-args]</code></pre>
+<pre><code>$ dploy [args] &lt;command&gt;</code></pre>
 <p>With:</p>
 <ul>
-    <li><code>&lt;command&gt;</code> one of the below.</li>
-    <li>OPTIONAL <code>[workdir]</code>: where to perform the command, defaults to <code>./</code>, i.e. the current directory.</li>
-    <li>OPTIONAL <code>[command-args]</code>: zero or more arguments, depending on the command.</li>
+    <li><code>&lt;command&gt;</code> one of the 8 below.</li>
+    <li>OPTIONAL <code>[args]</code>: 
+    <ul>
+        <li><code>-all</code> … output all available data, semantics are sub-command dependent</li>
+        <li><code>-workspace</code> … directory in which to operate (default is the current directory); mainly relevant for Docker-based usage</li>
+    </ul>
+    </li>
 </ul>
 <h4>
 <a id="init" class="anchor" href="#dploy-init" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy init</h4>
 <p>
     This command creates an app descriptor <code>dploy.app</code> as well as the <code>specs/</code> directory and
-    using the environment variable <code>DPLOY_EXAMPLES</code> you can influence which, if any examples should be made available.
+    using the environment variable <code>DPLOY_EXAMPLES</code> you can influence which, if any, examples should be made available.
 </p>
 <p><strong>Usage</strong>:</p>
 <pre><code>$ dploy init</code></pre>
@@ -129,21 +133,21 @@ report issues and also how to contribute to this project.
 🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs.
 	Next, you can run `dploy dryrun`
 </code></pre>
-<pre><code>$ DPLOY_EXAMPLES=all dploy init
+<pre><code>$ DPLOY_EXAMPLES=all dploy -workspace=./some/where/deeper/down init
     .___        .__
   __| _/______  |  |    ____  ___.__.
  / __ | \____ \ |  |   /  _ \<   |  |
 / /_/ | |  |_> >|  |__(  <_> )\___  |
 \____ | |   __/ |____/ \____/ / ____|
      \/ |__|                  \/
-This is dploy version 0.6.0, using workdir ./
+This is dploy version 0.6.2, using workspace [./some/where/deeper/down]
 Please visit http://dploy.sh to learn more about me,
 report issues and also how to contribute to this project.
 =========================================================
 🗣	Initializing your app ...
 🙌	Done initializing your app:
-		Set up app descriptor in /Users/mhausenblas/tmp/dploy.app
-		Created app spec directory /Users/mhausenblas/tmp/specs
+		Set up app descriptor in /Users/mhausenblas/tmp/some/where/deeper/down/dploy.app
+		Created app spec directory /Users/mhausenblas/tmp/some/where/deeper/down/specs
 		Initialized app spec directory with some examples
 🗣	Now it's time to edit the app descriptor and adapt or add Marathon app specs.
 	Next, you can run `dploy dryrun`
@@ -253,28 +257,47 @@ report issues and also how to contribute to this project.
     This command lists runtime properties of the app using the Marathon API.
 </p>
 <p><strong>Usage</strong>:</p>
-<pre><code>$ dploy ps</code></pre>
-<p><strong>Example</strong>:</p>
-<pre><code>$ dploy ps
+<pre><code>$ dploy [-all] ps</code></pre>
+<p><strong>Examples</strong>:</p>
+<pre><code>~/tmp $ dploy ps
     .___        .__
   __| _/______  |  |    ____  ___.__.
  / __ | \____ \ |  |   /  _ \<   |  |
 / /_/ | |  |_> >|  |__(  <_> )\___  |
 \____ | |   __/ |____/ \____/ / ____|
      \/ |__|                  \/
-This is dploy version 0.6.0, using workdir ./
+This is dploy version 0.6.2, using workspace [/Users/mhausenblas/tmp]
 Please visit http://dploy.sh to learn more about me,
 report issues and also how to contribute to this project.
 =========================================================
-🗣	Runtime properties of your app mh9test ...
+🗣	Runtime properties of your app [mh9test]:
 
- PROCESS              CMD                             IMAGE      INSTANCES  CPU  MEM (MB)  STATUS
+ PID                  INSTANCES  ENDPOINTS       STATUS
 
- /dployex/buzz/con    curl -OsL https://raw.githu...  python:3   1          0.5  100       online	💚
- /dployex/buzz/gen    echo cloud native hyperscal...  python:3   1          0.5  32        online	💚
- /dployex/helloworld  env >index.html && python3 ...  python:3   1          0.1  32        online	💚
- /webserver           N/A                             nginx:1.9  1          0.5  100       online	💚
+ /webserver           1          10.0.0.4:7338   online	💚
+ /dployex/helloworld  1          10.0.0.4:8948   online	💚
+ /dployex/buzz/gen    1          10.0.0.4:17172  online	💚
+ /dployex/buzz/con    1          10.0.0.4:29246  online	💚
+</code></pre>
+<pre><code>~/tmp $ dploy -all ps
+    .___        .__
+  __| _/______  |  |    ____  ___.__.
+ / __ | \____ \ |  |   /  _ \<   |  |
+/ /_/ | |  |_> >|  |__(  <_> )\___  |
+\____ | |   __/ |____/ \____/ / ____|
+     \/ |__|                  \/
+This is dploy version 0.6.2, using workspace [/Users/mhausenblas/tmp]
+Please visit http://dploy.sh to learn more about me,
+report issues and also how to contribute to this project.
+=========================================================
+🗣	Runtime properties of your app [mh9test]:
 
+ PID                  CMD                   IMAGE      INSTANCES  ENDPOINTS       CPU  MEM (MB)  STATUS
+
+ /webserver           N/A                   nginx:1.9  1          10.0.0.4:7338   0.5  100       online	💚
+ /dployex/helloworld  env >index.html &...  python:3   1          10.0.0.4:8948   0.1  32        online	💚
+ /dployex/buzz/gen    echo cloud native...  python:3   1          10.0.0.4:17172  0.5  32        online	💚
+ /dployex/buzz/con    curl -OsL https:/...  python:3   1          10.0.0.4:29246  0.5  100       online	💚
 </code></pre>
       </section>
       <footer>
