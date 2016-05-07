@@ -8,16 +8,11 @@ The [DC/OS](https://dcos.io) deployment tool for appops allows you to create, de
 
 ## Installation
 
-From source:
+From source (will get you always the latest version):
 
     $ go get github.com/mhausenblas/dploy
 
-Download binaries for Linux, OSX, and Windows:
-
-- [v0.6.0](https://github.com/mhausenblas/dploy/releases/tag/0.6.0)
-- [v0.5.1](https://github.com/mhausenblas/dploy/releases/tag/0.5.1)
-
-Via Docker:
+Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/releases/tag/0.6.2) for Linux, OSX, and Windows or use it via Docker:
 
     $ docker pull mhausenblas/dploy:0.6.2
     
