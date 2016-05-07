@@ -76,10 +76,16 @@ In the following we have a look at how to set up and use <code>dploy</code>.
 
 <h3>
 <a id="auth" class="anchor" href="#auth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DC/OS cluster authentication</h3>
-<p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS authentication</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master like so:</p>
+<p>To simplify the <a href="https://dcos.io/docs/1.7/administration/security/" target="_new">DC/OS authentication</a> handling, you can create a SSH tunnel from your local machine to the DC/OS master. The tunnel forwards traffic from your local machine to the System Marathon in DC/OS. In the following I assume that you've already authenticated your DC/OS CLI and if this is not the case you want to do a <code>dcos auth login</code> before. Once the tunnel is successfully established you can use <code>http://localhost:8080</code> for the <code>marathon_url</code> attribute in <code>dploy.app</code>.
+<h4>AWS</h4>
+<p>When using the <a href="https://dcos.io/docs/1.7/administration/installing/cloud/aws/" target="_new">AWS</a> Cloud installation method, you can set up the SSH tunnel like so:</p>
 <pre><code>$ ssh -i ~/.ssh/MYKEY core@MYMASTER -f -L 8080:localhost:8080 -N</code></pre>
+<p>In the above command, <code>MYKEY</code> is your private SSH key file and <code>MYMASTER</code> is the IP address of the Master which you can glean, for example, from the DC/OS Dashboard.</p>
+<h4>Azure</h4>
+<p>When using the <a href="https://dcos.io/docs/1.7/administration/installing/cloud/azure/" target="_new">Azure</a> Cloud installation method, you can set up the SSH tunnel like so:</p>
+<pre><code>$ ssh -i ~/.ssh/MYKEY -p2200 azureuser@$MASTERFQDN -L 8080:localhost:8080</code></pre>
+<p>In the above command, <code>MYKEY</code> is your private SSH key file and <code>MASTERFQDN</code> is the FQDN (some domain name ending in <code>cloudapp.azure.com</code>) of the Master which you can glean from the Azure portal/deployment output.</p>
 
-<p>The above command forwards traffic from your local machine to the System Marathon in DC/OS. It assumes that you're already authenticated and if this is not the case you want to do a <code>dcos auth login</code> before. Once the tunnel is successfully established you can use <code>http://localhost:8080</code> for the <code>marathon_url</code> attribute in <code>dploy.app</code>.</p>
 <h3>
 <a id="logging" class="anchor" href="#logging" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logging</h3>
 <p>
