@@ -202,7 +202,7 @@ func ListRuntimeProperties(workdir string, showAll bool) {
 			appID := app.ID
 			appRuntime, err := client.Application(appID)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Application ", appRuntime.ID, " status not available")
+				log.WithFields(log.Fields{"cmd": "ps"}).Debug("Application ", appRuntime.ID, " status not available")
 			}
 			if !strings.HasPrefix(appID, "/") {
 				appID += "/"
@@ -241,4 +241,23 @@ func ListRuntimeProperties(workdir string, showAll bool) {
 		fmt.Printf("%s\tDidn't find any processes belonging to your app\n", USER_MSG_PROBLEM)
 		os.Exit(3)
 	}
+}
+
+// Scale sets the number of isntances of a particular µS identified through pid.
+func Scale(workdir string, showAll bool, pid string, instances int) {
+	setLogLevel()
+	appDescriptor := readAppDescriptor()
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := marathonClient(*marathonURL)
+	if _, err = client.ScaleApplicationInstances(pid, instances, false); err != nil { // note: not forcing, last parameter set to false
+		fmt.Printf("%s\tFailed to scale Marathon app %s due to following error: %s\n", USER_MSG_PROBLEM, pid, err)
+		os.Exit(3)
+	} else {
+		client.WaitOnApplication(pid, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+		fmt.Printf("%s\tSuccessfully scaled app %s to %d instances\n", USER_MSG_SUCCESS, pid, instances)
+	}
+
 }

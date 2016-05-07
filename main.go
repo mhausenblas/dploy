@@ -16,13 +16,17 @@ const (
 \____ | |   __/ |____/ \____/ / ____|
      \/ |__|                  \/     
 `
-	VERSION = "0.6.2"
+	VERSION = "0.7.0"
 )
 
 var (
-	cmd       string
+	cmd string
+	// global arguments:
 	workspace string
 	all       bool
+	// command-specific arguments:
+	pid       string
+	instances int
 )
 
 func about() {
@@ -35,8 +39,11 @@ func about() {
 
 func init() {
 	cwd, _ := os.Getwd()
-	flag.StringVar(&workspace, "workspace", cwd, "directory in which to operate")
-	flag.BoolVar(&all, "all", false, "output all available data, semantics are sub-command dependent")
+	flag.StringVar(&workspace, "workspace", cwd, "[GLOBAL] directory in which to operate")
+	flag.BoolVar(&all, "all", false, "[GLOBAL] output all available data, semantics are command dependent")
+	flag.StringVar(&pid, "pid", "", "[SCALE] target the µS with pid")
+	flag.IntVar(&instances, "instances", 0, "[SCALE] set the number of instances")
+
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, "Usage: dploy [args] <command>\n")
 		fmt.Fprint(os.Stderr, "\nThe following commands are available:\n")
@@ -46,6 +53,7 @@ func init() {
 		fmt.Fprint(os.Stderr, "\tdestroy\t... tears down the app\n")
 		fmt.Fprint(os.Stderr, "\tls\t... lists the app's resources\n")
 		fmt.Fprint(os.Stderr, "\tps\t... lists runtime properties of the app\n")
+		fmt.Fprint(os.Stderr, "\tscale\t... scales a µS in the app\n")
 		fmt.Fprint(os.Stderr, "\nValid (optional) arguments are:\n")
 		flag.PrintDefaults()
 	}
@@ -74,6 +82,8 @@ func main() {
 		dploy.ListResources(workspace, all)
 	case "ps":
 		dploy.ListRuntimeProperties(workspace, all)
+	case "scale":
+		dploy.Scale(workspace, all, pid, instances)
 	default:
 		fmt.Fprint(os.Stderr, flag.Args()[0], " is not a valid command\n")
 		flag.Usage()
