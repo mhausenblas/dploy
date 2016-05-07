@@ -205,12 +205,13 @@ func renderGroup(group *marathon.Group, specFilename string, path string, table 
 	resType := RESOURCETYPE_GROUP
 	groupID := group.ID
 	if !strings.HasPrefix(group.ID, "/") {
-		groupID = "📂\t" + path + "/" + group.ID
+		groupID = path + "/" + group.ID
 	}
 	path = groupID
 	log.WithFields(log.Fields{"render": "group"}).Debug("At node ", path)
 	row := []string{groupID, resType, MARATHON_APP_SPEC_DIR + strings.Split(specFilename, MARATHON_APP_SPEC_DIR)[1]}
 	table.Append(row)
+	// process the rest of the members of this branch:
 	if group.Apps != nil {
 		for _, app := range group.Apps {
 			renderApp(app, specFilename, path, table)
