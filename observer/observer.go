@@ -7,12 +7,11 @@ import (
 	github "github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"net/http"
-	"time"
+	"strings"
 )
 
 const (
-	OBSERVE_BRANCH     string        = "dcos"
-	DEFAULT_POLL_DELAY time.Duration = 1
+	OBSERVE_BRANCH string = "dcos"
 )
 
 var (
@@ -42,7 +41,7 @@ func init() {
 }
 
 // Authenticates user against repo
-// Ripped off of https://github.com/google/go-github/blob/master/examples/basicauth/main.go
+// Based on https://godoc.org/github.com/google/go-github/github
 func auth() {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: pat})
 	log.WithFields(log.Fields{"auth": "step"}).Debug("Token Source ", ts)
@@ -52,26 +51,48 @@ func auth() {
 	log.WithFields(log.Fields{"auth": "done"}).Debug("GitHub client ", client)
 }
 
-// Registers a WebHook using https://developer.github.com/v3/repos/hooks
-func registerHook() {
-	deployHook = new(github.Hook)
-	hookType := "web"
-	deployHook.Name = new(string)
-	deployHook.Name = &hookType
-	deployHook.Config = make(map[string]interface{})
-	deployHook.Config["url"] = "http://localhost:8888/dploy"
-	enableHook := true
-	deployHook.Active = new(bool)
-	deployHook.Active = &enableHook
-
-	// see https://github.com/google/go-github/blob/master/github/repos_hooks.go
-	// for details on WebHookPayload
-	log.WithFields(log.Fields{"observe": "register"}).Debug("Hook: ", deployHook)
-	whp, _, err := client.Repositories.CreateHook(owner, repo, deployHook)
+// Checks if a Webhook already exists
+func hookExists() bool {
+	opt := &github.ListOptions{Page: 1}
+	hooks, _, err := client.Repositories.ListHooks(owner, repo, opt)
 	if err != nil {
-		log.Fatal("Can't register hook due to %v", err)
+		log.Fatal("Can't query hooks due to %v", err)
 	}
-	log.WithFields(log.Fields{"observe": "done"}).Debug("Registered WebHook ", whp)
+	for _, hook := range hooks {
+		log.WithFields(log.Fields{"hook": "check"}).Debug("Looking at hook:\n", hook)
+		url, _ := hook.Config["url"].(string)
+		if strings.HasSuffix(url, "/dploy") {
+			return true
+		}
+	}
+	return false
+}
+
+// Registers a Webhook using https://developer.github.com/v3/repos/hooks
+func registerHook() {
+
+	if !hookExists() {
+		deployHook = new(github.Hook)
+		hookType := "web"
+		deployHook.Name = new(string)
+		deployHook.Name = &hookType
+		deployHook.Config = make(map[string]interface{})
+		deployHook.Config["url"] = "http://localhost:8888/dploy"
+		enableHook := true
+		deployHook.Active = new(bool)
+		deployHook.Active = &enableHook
+
+		// see https://github.com/google/go-github/blob/master/github/repos_hooks.go
+		// for details on WebHookPayload
+		log.WithFields(log.Fields{"observe": "register"}).Debug("Hook: ", deployHook)
+		whp, _, err := client.Repositories.CreateHook(owner, repo, deployHook)
+		if err != nil {
+			log.Fatal("Can't register hook due to %v", err)
+		}
+		log.WithFields(log.Fields{"observe": "done"}).Debug("Registered WebHook ", whp)
+	} else {
+		log.WithFields(log.Fields{"observe": "done"}).Debug("WebHook was already registered!")
+	}
 }
 
 func main() {
