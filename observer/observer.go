@@ -7,13 +7,15 @@ import (
 	log "github.com/Sirupsen/logrus"
 	github "github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
 const (
-	VERSION        string = "0.2.0"
+	VERSION        string = "0.3.0"
 	OBSERVE_BRANCH string = "dcos"
 )
 
@@ -34,6 +36,17 @@ var (
 type DployResult struct {
 	success bool
 	msg     string
+}
+
+type DNSResults struct {
+	SRVRecords []SRVRecord
+}
+
+type SRVRecord struct {
+	Service string
+	Host    string
+	IP      string
+	Port    int
 }
 
 func init() {
@@ -68,6 +81,24 @@ func auth() {
 	log.WithFields(log.Fields{"auth": "done"}).Debug("GitHub client ", client)
 }
 
+func whereAmI() string {
+	mesosdns := "http://leader.mesos:8123"
+	log.WithFields(log.Fields{"sd": "step"}).Debug("Trying to query HTTP API of ", mesosdns)
+	lookup := "_dploy-observer._tcp.marathon.mesos."
+	resp, err := http.Get(mesosdns + "/v1/services/" + lookup)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Can't look up my address due to error ", err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Error reading response from Mesos-DNS ", err)
+	}
+	var data DNSResults
+	json.Unmarshal(body, &data)
+	return "http://" + data.SRVRecords[0].IP + ":" + strconv.Itoa(data.SRVRecords[0].Port)
+}
+
 // Checks if a Webhook already exists
 func hookExists() bool {
 	opt := &github.ListOptions{Page: 1}
@@ -88,14 +119,13 @@ func hookExists() bool {
 // Registers a Webhook using https://developer.github.com/v3/repos/hooks
 func registerHook() {
 
-	//TODO: service discovery (via Mesos-DNS): on which node/port am I serving and put that into Config["url"]
 	if !hookExists() {
 		deployHook = new(github.Hook)
 		hookType := "web"
 		deployHook.Name = new(string)
 		deployHook.Name = &hookType
 		deployHook.Config = make(map[string]interface{})
-		deployHook.Config["url"] = "http://localhost:8888/dploy"
+		deployHook.Config["url"] = whereAmI() + "/dploy"
 		enableHook := true
 		deployHook.Active = new(bool)
 		deployHook.Active = &enableHook
