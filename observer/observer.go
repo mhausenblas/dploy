@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	VERSION        string = "0.1.0"
 	OBSERVE_BRANCH string = "dcos"
 )
 
@@ -71,6 +72,7 @@ func hookExists() bool {
 // Registers a Webhook using https://developer.github.com/v3/repos/hooks
 func registerHook() {
 
+	//TODO: service discovery (via Mesos-DNS): on which node/port am I serving and put that into Config["url"]
 	if !hookExists() {
 		deployHook = new(github.Hook)
 		hookType := "web"
