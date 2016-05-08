@@ -39,9 +39,9 @@ type DployResult struct {
 func init() {
 	mux = http.NewServeMux()
 	grabEnv() // try via env variables first
-	flag.StringVar(&pat, "pat", "", "the personal access token, via https://github.com/settings/tokens")
-	flag.StringVar(&owner, "owner", "", "the GitHub owner, for example 'mhausenblas' or 'mesosphere'.")
-	flag.StringVar(&repo, "repo", "", "the GitHub repo, for example 'dploy' or 'marathon'.")
+	flag.StringVar(&pat, "pat", pat, "the personal access token, via https://github.com/settings/tokens")
+	flag.StringVar(&owner, "owner", owner, "the GitHub owner, for example 'mhausenblas' or 'mesosphere'.")
+	flag.StringVar(&repo, "repo", repo, "the GitHub repo, for example 'dploy' or 'marathon'.")
 	flag.Usage = func() {
 		flag.PrintDefaults()
 	}
