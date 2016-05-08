@@ -47,7 +47,7 @@ type DployApp struct {
 // in the workdir specified as well as copies in example app specs.
 // For example:
 //  dploy.Init("../.")
-func Init(workdir string, showAll bool) {
+func Init(workdir string, showAll bool) bool {
 	setLogLevel()
 	ensureWorkDir(workdir)
 	fmt.Printf("%s\tInitializing your app ...\n", USER_MSG_INFO)
@@ -57,9 +57,10 @@ func Init(workdir string, showAll bool) {
 	appDescriptor.AppName = DEFAULT_APP_NAME
 	d, err := yaml.Marshal(&appDescriptor)
 	if err != nil {
-		log.Fatalf("Failed to serialize dploy app descriptor. Error: %v", err)
+		log.WithFields(log.Fields{"cmd": "init"}).Error("Failed to serialize dploy app descriptor due to error: ", err)
+		return false
 	}
-	log.WithFields(nil).Debug("Trying to create app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
+	log.WithFields(log.Fields{"cmd": "init"}).Debug("Trying to create app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
 	appDescriptorLocation, _ := filepath.Abs(filepath.Join(workdir, APP_DESCRIPTOR_FILENAME))
 	writeData(appDescriptorLocation, string(d))
 	specsDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
@@ -83,17 +84,19 @@ func Init(workdir string, showAll bool) {
 	}
 	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs.\n", USER_MSG_INFO)
 	fmt.Printf("\tNext, you can run `dploy dryrun`\n")
+	return true
 }
 
 // DryRun validates the app descriptor by checking if Marathon is reachable and also
 // checks if the app spec directory is present, incl. at least one Marathon app spec.
-func DryRun(workdir string, showAll bool) {
+func DryRun(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tKicking the tires! Checking Marathon connection, descriptor and app specs ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{"cmd": "dryrun"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
 	}
 	info := marathonGetInfo(*marathonURL)
 	fmt.Printf("%s\tFound DC/OS Marathon instance\n", USER_MSG_SUCCESS)
@@ -105,7 +108,7 @@ func DryRun(workdir string, showAll bool) {
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
 		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
 		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
-		os.Exit(3)
+		return false
 	} else {
 		appDescriptor := readAppDescriptor()
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
@@ -114,71 +117,78 @@ func DryRun(workdir string, showAll bool) {
 				fmt.Printf("%s\tFound %d app spec(s) to deploy\n", USER_MSG_SUCCESS, len(appSpecs))
 			} else {
 				fmt.Printf("%s\tDidn't find any app specs in %s \n", USER_MSG_PROBLEM, MARATHON_APP_SPEC_DIR)
-				os.Exit(3)
+				return false
 			}
 		} else {
 			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
-			os.Exit(3)
+			return false
 		}
 	}
 	fmt.Printf("%s\tNow you can launch your app using `dploy run` or `dploy ls` to list resources.\n", USER_MSG_INFO)
+	return true
 }
 
 // Run launches the app as defined in the descriptor and the app specs.
 // It scans the `specs/` directory for Marathon app specs and launches them using the Marathon API.
-func Run(workdir string, showAll bool) {
+func Run(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tOK, let's rock and roll! Trying to launch your app ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{"cmd": "run"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
 	}
 	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
 	fmt.Printf("%s\tNow you can use `dploy ps` to list processes or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
+	return true
 }
 
 // Destroy tears down the app.
 // It scans the `specs/` directory for Marathon app specs and deletes apps using the Marathon API.
-func Destroy(workdir string, showAll bool) {
+func Destroy(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{"cmd": "destroy"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
 	}
 	marathonDeleteApps(*marathonURL, appDescriptor.AppName, workdir)
 	fmt.Printf("%s\tDestroyed your app!\n", USER_MSG_SUCCESS)
+	return true
 }
 
 // ListResources lists the resource definitions of the app.
-func ListResources(workdir string, showAll bool) {
+func ListResources(workdir string, showAll bool) bool {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	specsDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
 		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
 		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
-		os.Exit(3)
+		return false
 	} else {
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			renderAppResources(appDescriptor, workdir)
 		} else {
 			fmt.Printf("%s\tDidn't find an app descriptor (%s) in current directory\n", USER_MSG_PROBLEM, APP_DESCRIPTOR_FILENAME)
-			os.Exit(3)
+			return false
 		}
 	}
+	return true
 }
 
 // ListRuntimeProperties lists runtime properties of the app.
-func ListRuntimeProperties(workdir string, showAll bool) {
+func ListRuntimeProperties(workdir string, showAll bool) bool {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{"cmd": "ps"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
 	table := tw.NewWriter(os.Stdout)
@@ -239,25 +249,28 @@ func ListRuntimeProperties(workdir string, showAll bool) {
 		table.Render()
 	} else {
 		fmt.Printf("%s\tDidn't find any processes belonging to your app\n", USER_MSG_PROBLEM)
-		os.Exit(3)
+		return false
 	}
+	return true
 }
 
 // Scale sets the number of instances of a particular µS identified through pid.
-func Scale(workdir string, showAll bool, pid string, instances int) {
+func Scale(workdir string, showAll bool, pid string, instances int) bool {
 	setLogLevel()
 	appDescriptor := readAppDescriptor()
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.Fatal(err)
+		log.WithFields(log.Fields{"cmd": "scale"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
 	}
 	client := marathonClient(*marathonURL)
 	if _, err = client.ScaleApplicationInstances(pid, instances, false); err != nil { // note: not forcing, last parameter set to false
 		fmt.Printf("%s\tFailed to scale Marathon app %s due to following error: %s\n", USER_MSG_PROBLEM, pid, err)
-		os.Exit(3)
+		return false
 	} else {
 		client.WaitOnApplication(pid, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		fmt.Printf("%s\tSuccessfully scaled app %s to %d instances\n", USER_MSG_SUCCESS, pid, instances)
 	}
+	return true
 
 }

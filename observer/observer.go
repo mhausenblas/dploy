@@ -1,17 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	github "github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"net/http"
+	"os"
 	"strings"
 )
 
 const (
-	VERSION        string = "0.1.0"
+	VERSION        string = "0.2.0"
 	OBSERVE_BRANCH string = "dcos"
 )
 
@@ -29,9 +31,14 @@ var (
 	deployHook *github.Hook
 )
 
+type DployResult struct {
+	success bool
+	msg     string
+}
+
 func init() {
 	mux = http.NewServeMux()
-
+	grabEnv() // try via env variables first
 	flag.StringVar(&pat, "pat", "", "the personal access token, via https://github.com/settings/tokens")
 	flag.StringVar(&owner, "owner", "", "the GitHub owner, for example 'mhausenblas' or 'mesosphere'.")
 	flag.StringVar(&repo, "repo", "", "the GitHub repo, for example 'dploy' or 'marathon'.")
@@ -39,6 +46,15 @@ func init() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+}
+
+// Grabs the necessary parameter (GitHub personal access token, owner and repo)
+// from environment, if present at all. Note: the CLI arguments will overwrite
+// these environment variables
+func grabEnv() {
+	pat = os.Getenv("DPLOY_OBSERVER_GITHUB_PAT")
+	owner = os.Getenv("DPLOY_OBSERVER_GITHUB_OWNER")
+	repo = os.Getenv("DPLOY_OBSERVER_GITHUB_REPO")
 }
 
 // Authenticates user against repo
@@ -106,7 +122,13 @@ func main() {
 		fmt.Fprint(w, `{"status":"ok"}`)
 	})
 	mux.HandleFunc("/dploy", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"status":"dploy run"}`)
+		//pull(owner, repo)
+		//success := dploy.Run(os.Getwd(), false)
+		dr := DployResult{}
+		dr.success = true
+		dr.msg = "ok"
+		w.Header().Set("Content-Type", "application/javascript")
+		fmt.Fprint(w, json.NewEncoder(w).Encode(dr))
 	})
-	log.Fatal(http.ListenAndServe("localhost:8888", mux))
+	log.Fatal(http.ListenAndServe(":8888", mux))
 }

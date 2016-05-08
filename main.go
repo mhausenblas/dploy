@@ -69,24 +69,30 @@ func init() {
 
 func main() {
 	about()
+	success := false
 	switch cmd {
 	case "init":
-		dploy.Init(workspace, all)
+		success = dploy.Init(workspace, all)
 	case "dryrun":
-		dploy.DryRun(workspace, all)
+		success = dploy.DryRun(workspace, all)
 	case "run":
-		dploy.Run(workspace, all)
+		success = dploy.Run(workspace, all)
 	case "destroy":
-		dploy.Destroy(workspace, all)
+		success = dploy.Destroy(workspace, all)
 	case "ls":
-		dploy.ListResources(workspace, all)
+		success = dploy.ListResources(workspace, all)
 	case "ps":
-		dploy.ListRuntimeProperties(workspace, all)
+		success = dploy.ListRuntimeProperties(workspace, all)
 	case "scale":
-		dploy.Scale(workspace, all, pid, instances)
+		success = dploy.Scale(workspace, all, pid, instances)
 	default:
-		fmt.Fprint(os.Stderr, flag.Args()[0], " is not a valid command\n")
+		fmt.Fprint(os.Stderr, flag.Args()[0], " is not a valid dploy command\n")
 		flag.Usage()
 		os.Exit(2)
+	}
+	if success {
+		os.Exit(0)
+	} else {
+		os.Exit(3)
 	}
 }

@@ -29,4 +29,8 @@ DEBU[0000] Payload github.Hook{CreatedAt:time.Time{sec:, nsec:, loc:time.Locatio
 The `observer` service is meant to be used as a containerized service via Marathon:
 
 - the observer Docker image
+
 - the observer.json app spec
+
+
+`DPLOY_OBSERVER_GITHUB_PAT`, `DPLOY_OBSERVER_GITHUB_OWNER`, and `DPLOY_OBSERVER_GITHUB_REPO`
