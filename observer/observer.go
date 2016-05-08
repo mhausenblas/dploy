@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VERSION        string = "0.4.0"
+	VERSION        string = "0.5.0"
 	OBSERVE_BRANCH string = "dcos"
 )
 
@@ -100,7 +100,6 @@ func whereAmI() string {
 		log.WithFields(log.Fields{"sd": "step"}).Error("Error reading response from Mesos-DNS ", err)
 		return loc
 	}
-	log.WithFields(log.Fields{"sd": "step"}).Debug("Got raw response ", body)
 	var srvrecords []SRVRecord
 	err = json.Unmarshal(body, &srvrecords)
 	if err != nil {
@@ -158,9 +157,12 @@ func registerHook() {
 
 func main() {
 	log.SetLevel(log.DebugLevel)
-	fmt.Printf("Observing the %s branch of %s/%s\n", OBSERVE_BRANCH, owner, repo)
+	fmt.Printf("This is dploy observer version %s\n", VERSION)
+	fmt.Printf("I'm observing branch %s of repo %s/%s\n", OBSERVE_BRANCH, owner, repo)
 	auth()
+	fmt.Printf("Authentication against GitHub done\n")
 	registerHook()
+	fmt.Printf("Webhook registered\n")
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"status":"ok"}`)
 	})
