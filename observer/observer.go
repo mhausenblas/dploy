@@ -10,12 +10,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
 const (
-	VERSION        string = "0.3.0"
+	VERSION        string = "0.4.0"
 	OBSERVE_BRANCH string = "dcos"
 )
 
@@ -28,6 +27,9 @@ var (
 
 	// personal access token (pat), owner and repo to observe
 	pat, owner, repo string
+
+	// public IP address FQDN of the public agent this service using
+	pubnode string
 
 	// Web hook used to trigger deployment
 	deployHook *github.Hook
@@ -46,7 +48,7 @@ type SRVRecord struct {
 	Service string
 	Host    string
 	IP      string
-	Port    int
+	Port    string
 }
 
 func init() {
@@ -65,6 +67,7 @@ func init() {
 // from environment, if present at all. Note: the CLI arguments will overwrite
 // these environment variables
 func grabEnv() {
+	pubnode = os.Getenv("DPLOY_PUBLIC_NODE")
 	pat = os.Getenv("DPLOY_OBSERVER_GITHUB_PAT")
 	owner = os.Getenv("DPLOY_OBSERVER_GITHUB_OWNER")
 	repo = os.Getenv("DPLOY_OBSERVER_GITHUB_REPO")
@@ -104,7 +107,7 @@ func whereAmI() string {
 		log.WithFields(log.Fields{"sd": "step"}).Error("Error decoding JSON object ", err)
 		return loc
 	}
-	loc = "http://" + srvrecords[0].IP + ":" + strconv.Itoa(srvrecords[0].Port)
+	loc = "http://" + pubnode + ":" + srvrecords[0].Port
 	log.WithFields(log.Fields{"sd": "done"}).Debug("Found myself at ", loc)
 	return loc
 }
