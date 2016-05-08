@@ -82,21 +82,31 @@ func auth() {
 }
 
 func whereAmI() string {
+	loc := ""
 	mesosdns := "http://leader.mesos:8123"
 	log.WithFields(log.Fields{"sd": "step"}).Debug("Trying to query HTTP API of ", mesosdns)
 	lookup := "_dploy-observer._tcp.marathon.mesos."
 	resp, err := http.Get(mesosdns + "/v1/services/" + lookup)
 	if err != nil {
 		log.WithFields(log.Fields{"sd": "step"}).Error("Can't look up my address due to error ", err)
+		return loc
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.WithFields(log.Fields{"sd": "step"}).Error("Error reading response from Mesos-DNS ", err)
+		return loc
 	}
-	var data DNSResults
-	json.Unmarshal(body, &data)
-	return "http://" + data.SRVRecords[0].IP + ":" + strconv.Itoa(data.SRVRecords[0].Port)
+	log.WithFields(log.Fields{"sd": "step"}).Debug("Got raw response ", body)
+	var srvrecords []SRVRecord
+	err = json.Unmarshal(body, &srvrecords)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Error decoding JSON object ", err)
+		return loc
+	}
+	loc = "http://" + srvrecords[0].IP + ":" + strconv.Itoa(srvrecords[0].Port)
+	log.WithFields(log.Fields{"sd": "done"}).Debug("Found myself at ", loc)
+	return loc
 }
 
 // Checks if a Webhook already exists
