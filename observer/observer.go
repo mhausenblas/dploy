@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	VERSION string = "0.8.0"
+	VERSION string = "0.8.1"
 	// which branch to observe for changes:
 	OBSERVE_BRANCH string = "dcos"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -191,41 +191,40 @@ func unregisterHook() string {
 }
 
 // from http://stackoverflow.com/questions/20357223/easy-way-to-unzip-file-with-golang
+// patched f.Mode() -> 0755
 func unzip(src, dest string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
-
 	for _, f := range r.File {
 		rc, err := f.Open()
 		if err != nil {
 			return err
 		}
 		defer rc.Close()
-
 		fpath := filepath.Join(dest, f.Name)
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(fpath, f.Mode())
+			os.MkdirAll(fpath, 0755)
+			// os.MkdirAll(fpath, f.Mode())
 		} else {
 			var fdir string
 			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
 				fdir = fpath[:lastIndex]
 			}
-
-			err = os.MkdirAll(fdir, f.Mode())
+			err = os.MkdirAll(fdir, 0755)
+			// err = os.MkdirAll(fdir, f.Mode())
 			if err != nil {
 				log.Fatal(err)
 				return err
 			}
-			f, err := os.OpenFile(
-				fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			f, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+			// f, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
 				return err
 			}
 			defer f.Close()
-
 			_, err = io.Copy(f, rc)
 			if err != nil {
 				return err
