@@ -294,7 +294,6 @@ func marathonAppRuntime(marathonURL url.URL, dployAppName string) []marathon.App
 func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
-	go showSpinner(100 * time.Millisecond)
 	for _, specFilename := range appSpecs {
 		appSpec, group := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
@@ -319,13 +318,11 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 			client.WaitOnGroup(group.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
-	hideSpinner()
 }
 
 func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string) {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
-	go showSpinner(100 * time.Millisecond)
 	for _, specFilename := range appSpecs {
 		appSpec, groupAppSpec := readAppSpec(dployAppName, specFilename)
 		if appSpec != nil {
@@ -346,5 +343,4 @@ func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string
 			client.WaitOnDeployment(groupAppSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
-	hideSpinner()
 }

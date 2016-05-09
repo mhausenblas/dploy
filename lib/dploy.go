@@ -139,9 +139,13 @@ func Run(workdir string, showAll bool) bool {
 		log.WithFields(log.Fields{"cmd": "run"}).Error("Failed to connect to Marathon due to error ", err)
 		return false
 	}
+	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
+	go showSpinner(100 * time.Millisecond)
 	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
+	hideSpinner()
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
-	fmt.Printf("%s\tNow you can use `dploy ps` to list processes or `dploy destroy` to tear down the app again.\n", USER_MSG_INFO)
+	fmt.Printf("%s\tNow you can use `dploy ps` to list processes\n", USER_MSG_INFO)
+	fmt.Printf("\tor `dploy destroy` to tear down the app again.\n")
 	return true
 }
 
@@ -156,7 +160,10 @@ func Destroy(workdir string, showAll bool) bool {
 		log.WithFields(log.Fields{"cmd": "destroy"}).Error("Failed to connect to Marathon due to error ", err)
 		return false
 	}
+	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
+	go showSpinner(100 * time.Millisecond)
 	marathonDeleteApps(*marathonURL, appDescriptor.AppName, workdir)
+	hideSpinner()
 	fmt.Printf("%s\tDestroyed your app!\n", USER_MSG_SUCCESS)
 	return true
 }
@@ -203,7 +210,7 @@ func ListRuntimeProperties(workdir string, showAll bool) bool {
 	table.SetRowSeparator("")
 	table.SetAlignment(tw.ALIGN_LEFT)
 	table.SetHeaderAlignment(tw.ALIGN_LEFT)
-	fmt.Printf("%s\tQuerying Marathon\n", USER_MSG_INFO)
+	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
 	go showSpinner(100 * time.Millisecond)
 	if myApps != nil && len(myApps) > 0 {
 		for _, app := range myApps {

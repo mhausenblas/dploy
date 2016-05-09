@@ -119,7 +119,7 @@ func hookExists() bool {
 		log.Fatal("Can't query hooks due to %v", err)
 	}
 	for _, hook := range hooks {
-		log.WithFields(log.Fields{"hook": "check"}).Debug("Looking at hook:\n", hook)
+		log.WithFields(log.Fields{"hook": "check"}).Debug("Looking at hook ", hook)
 		url, _ := hook.Config["url"].(string)
 		if strings.HasSuffix(url, "/dploy") {
 			return true

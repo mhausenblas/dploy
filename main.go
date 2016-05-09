@@ -40,7 +40,9 @@ func about() {
 func init() {
 	cwd, _ := os.Getwd()
 	flag.StringVar(&workspace, "workspace", cwd, "[GLOBAL] directory in which to operate")
+	flag.StringVar(&workspace, "w", cwd, "[GLOBAL] directory in which to operate (shorthand)")
 	flag.BoolVar(&all, "all", false, "[GLOBAL] output all available data, semantics are command dependent")
+	flag.BoolVar(&all, "a", false, "[GLOBAL] output all available data, semantics are command dependent (shorthand)")
 	flag.StringVar(&pid, "pid", "", "[SCALE] target the µS with pid")
 	flag.IntVar(&instances, "instances", 0, "[SCALE] set the number of instances")
 
