@@ -52,12 +52,6 @@ func ensureWorkDir(workdirPath string) {
 	log.WithFields(log.Fields{"workspace": "check"}).Info("Made sure ", workDir, " exists ")
 }
 
-func fetchExample(example string, specsDir string) {
-	exampleURL, _ := url.Parse(example)
-	exampleFileName, exampleContent := getExample(*exampleURL)
-	writeData(filepath.Join(specsDir, exampleFileName), exampleContent)
-}
-
 func writeData(fileName string, data string) {
 	f, err := os.Create(fileName)
 	if err != nil {
@@ -68,20 +62,27 @@ func writeData(fileName string, data string) {
 	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
 }
 
-func getExample(exampleURL url.URL) (string, string) {
-	response, err := http.Get(exampleURL.String())
-	exampleFilePath := strings.Split(exampleURL.Path, "/")
-	exampleFileName := exampleFilePath[len(exampleFilePath)-1]
+func download(theURL string, intoDir string) string {
+	u, _ := url.Parse(theURL)
+	fn, c := fetch(*u)
+	writeData(filepath.Join(intoDir, fn), c)
+	return fn
+}
+
+func fetch(theURL url.URL) (string, string) {
+	response, err := http.Get(theURL.String())
+	fp := strings.Split(theURL.Path, "/")
+	fn := fp[len(fp)-1]
 	if err != nil {
-		log.WithFields(log.Fields{"example": "download"}).Error("Can't download example ", exampleURL.String(), "due to ", err)
-		return exampleFileName, ""
+		log.WithFields(log.Fields{"fetch": "GET"}).Error("Can't fetch content from ", theURL.String(), "due to ", err)
+		return fn, ""
 	} else {
 		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
+		c, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.WithFields(log.Fields{"example": "read"}).Error("Can't read example content due to ", err)
+			log.WithFields(log.Fields{"fetch": "read"}).Error("Can't read content due to ", err)
 		}
-		return exampleFileName, string(contents)
+		return fn, string(c)
 	}
 }
 
@@ -100,11 +101,41 @@ func readAppDescriptor() DployApp {
 }
 
 func launchObserver(appDescriptor DployApp, workdir string) bool {
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to error ", err)
+		return false
+	}
+	client := marathonClient(*marathonURL)
 	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && appDescriptor.PAToken != "" {
-		// appDescriptor.RepoURL
-		// appDescriptor.PublicNode
-		// appDescriptor.PAToken
-		return true
+		// TBD: check if observer already runs and if not
+
+		// https://github.com/OWNER/REPO -> OWNER, REPO
+		owpo := appDescriptor.RepoURL[len("https://github.com/"):]
+		owner := strings.Split(owpo, "/")[0]
+		repo := strings.Split(owpo, "/")[1]
+		log.WithFields(log.Fields{"observer": "launch"}).Debug("Got repo ", owner, "/", repo)
+		fn := download(MARATHON_OBSERVER_TEMPLATE, workdir)
+		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
+		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
+		appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)
+		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", appDescriptor.PAToken)
+		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
+		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
+		log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
+		if appSpec != nil {
+			app, err := client.CreateApplication(appSpec)
+			if err != nil {
+				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to launch observer due to: ", err)
+				return false
+			} else {
+				log.WithFields(log.Fields{"observer": "launch"}).Info("Launched observer with ID ", app.ID)
+			}
+			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+			return true
+		} else {
+			return false
+		}
 	}
 	return false
 }

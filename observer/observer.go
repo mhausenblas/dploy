@@ -131,6 +131,8 @@ func hookExists() bool {
 // Registers a Webhook using https://developer.github.com/v3/repos/hooks
 func registerHook() {
 
+	// TODO: delay registration until DNS service discovery works
+
 	if !hookExists() {
 		deployHook = new(github.Hook)
 		hookType := "web"

@@ -14,26 +14,27 @@ import (
 )
 
 const (
-	ENV_VAR_DPLOY_LOGLEVEL   string        = "DPLOY_LOGLEVEL"
-	ENV_VAR_DPLOY_EXAMPLES   string        = "DPLOY_EXAMPLES"
-	DEFAULT_DEPLOY_WAIT_TIME time.Duration = 10
-	APP_DESCRIPTOR_FILENAME  string        = "dploy.app"
-	DEFAULT_MARATHON_URL     string        = "http://localhost:8080"
-	DEFAULT_APP_NAME         string        = "CHANGEME"
-	MARATHON_APP_SPEC_DIR    string        = "specs/"
-	MARATHON_APP_SPEC_EXT    string        = ".json"
-	MARATHON_LABEL           string        = "DPLOY"
-	RESOURCETYPE_PLATFORM    string        = "platform"
-	RESOURCETYPE_APP         string        = "app"
-	RESOURCETYPE_GROUP       string        = "group"
-	CMD_TRUNCATE             int           = 17
-	EXAMPLE_HELLO_WORLD      string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
-	EXAMPLE_BUZZ             string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
-	USER_MSG_SUCCESS         string        = "🙌"
-	USER_MSG_PROBLEM         string        = "🙁"
-	USER_MSG_INFO            string        = "🗣"
-	SYSTEM_MSG_ONLINE        string        = "online \t💚"
-	SYSTEM_MSG_OFFLINE       string        = "offline\t💔"
+	ENV_VAR_DPLOY_LOGLEVEL     string        = "DPLOY_LOGLEVEL"
+	ENV_VAR_DPLOY_EXAMPLES     string        = "DPLOY_EXAMPLES"
+	DEFAULT_DEPLOY_WAIT_TIME   time.Duration = 10
+	APP_DESCRIPTOR_FILENAME    string        = "dploy.app"
+	DEFAULT_MARATHON_URL       string        = "http://localhost:8080"
+	DEFAULT_APP_NAME           string        = "CHANGEME"
+	MARATHON_APP_SPEC_DIR      string        = "specs/"
+	MARATHON_APP_SPEC_EXT      string        = ".json"
+	MARATHON_LABEL             string        = "DPLOY"
+	MARATHON_OBSERVER_TEMPLATE string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/observer/observer.json"
+	RESOURCETYPE_PLATFORM      string        = "platform"
+	RESOURCETYPE_APP           string        = "app"
+	RESOURCETYPE_GROUP         string        = "group"
+	CMD_TRUNCATE               int           = 17
+	EXAMPLE_HELLO_WORLD        string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
+	EXAMPLE_BUZZ               string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
+	USER_MSG_SUCCESS           string        = "🙌"
+	USER_MSG_PROBLEM           string        = "🙁"
+	USER_MSG_INFO              string        = "🗣"
+	SYSTEM_MSG_ONLINE          string        = "online \t💚"
+	SYSTEM_MSG_OFFLINE         string        = "offline\t💔"
 )
 
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
@@ -77,11 +78,11 @@ func Init(workdir string, showAll bool) bool {
 	ex := os.Getenv(ENV_VAR_DPLOY_EXAMPLES)
 	switch strings.ToLower(ex) {
 	case "all":
-		fetchExample(EXAMPLE_HELLO_WORLD, specsDir)
-		fetchExample(EXAMPLE_BUZZ, specsDir)
+		download(EXAMPLE_HELLO_WORLD, specsDir)
+		download(EXAMPLE_BUZZ, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with some examples\n")
 	case "buzz":
-		fetchExample(EXAMPLE_BUZZ, specsDir)
+		download(EXAMPLE_BUZZ, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
 	default:
 	}
