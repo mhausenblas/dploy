@@ -99,8 +99,14 @@ func readAppDescriptor() DployApp {
 	return appDescriptor
 }
 
-func launchObserver() {
-
+func launchObserver(appDescriptor DployApp, workdir string) bool {
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && appDescriptor.PAToken != "" {
+		// appDescriptor.RepoURL
+		// appDescriptor.PublicNode
+		// appDescriptor.PAToken
+		return true
+	}
+	return false
 }
 
 func getAppSpecs(workdir string) []string {
