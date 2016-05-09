@@ -158,11 +158,9 @@ func Run(workdir string, showAll bool) bool {
 	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
 	hideSpinner()
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
-
 	// check and if configured launched the push-to-deploy
 	// support via the observer service:
 	launchObserver(appDescriptor, workdir)
-
 	fmt.Printf("%s\tNow you can use `dploy ps` to list processes\n", USER_MSG_INFO)
 	fmt.Printf("\tor `dploy destroy` to tear down the app again.\n")
 	return true

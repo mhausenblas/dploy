@@ -132,6 +132,10 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 				log.WithFields(log.Fields{"observer": "launch"}).Info("Launched observer with ID ", app.ID)
 			}
 			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+			if err != nil {
+				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to error ", err)
+				return false
+			}
 			return true
 		} else {
 			return false

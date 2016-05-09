@@ -10,12 +10,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
-	VERSION        string = "0.6.0"
-	OBSERVE_BRANCH string = "dcos"
+	VERSION                    string        = "0.7.0"
+	OBSERVE_BRANCH             string        = "dcos"
+	DEFAULT_OBSERVER_WAIT_TIME time.Duration = 10
 )
 
 var (
@@ -33,6 +36,9 @@ var (
 
 	// Web hook used to trigger deployment
 	deployHook *github.Hook
+
+	// how long to wait to register Webhook
+	registerDelay time.Duration
 )
 
 type DployResult struct {
@@ -53,6 +59,7 @@ type SRVRecord struct {
 
 func init() {
 	mux = http.NewServeMux()
+	registerDelay = DEFAULT_OBSERVER_WAIT_TIME
 	grabEnv() // try via env variables first
 	flag.StringVar(&pat, "pat", pat, "the personal access token, via https://github.com/settings/tokens")
 	flag.StringVar(&owner, "owner", owner, "the GitHub owner, for example 'mhausenblas' or 'mesosphere'.")
@@ -71,6 +78,10 @@ func grabEnv() {
 	pat = os.Getenv("DPLOY_OBSERVER_GITHUB_PAT")
 	owner = os.Getenv("DPLOY_OBSERVER_GITHUB_OWNER")
 	repo = os.Getenv("DPLOY_OBSERVER_GITHUB_REPO")
+	if dr := os.Getenv("DPLOY_OBSERVER_DELAY_REGISTRATION"); dr != "" {
+		rd, _ := strconv.ParseUint(dr, 10, 64)
+		registerDelay = time.Duration(rd)
+	}
 }
 
 // Authenticates user against repo
@@ -173,11 +184,18 @@ func unregisterHook() string {
 	return fmt.Sprintf("Unregistered hook")
 }
 
+func bootstrap() {
+	time.Sleep(time.Second * DEFAULT_OBSERVER_WAIT_TIME) // wait for Mesos-DNS to kick in
+	result := registerHook()
+	fmt.Printf("%s\n", result)
+}
+
 func main() {
 	log.SetLevel(log.DebugLevel)
 	fmt.Printf("This is dploy observer version %s\n", VERSION)
 	fmt.Printf("I'm observing branch %s of repo %s/%s trying to serve on node %s\n", OBSERVE_BRANCH, owner, repo, pubnode)
 	auth()
+	go bootstrap()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
 		fmt.Fprint(w, `{"status":"ok"}`)
