@@ -1,22 +1,26 @@
 package main
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	github "github.com/google/go-github/github"
+	dploy "github.com/mhausenblas/dploy/lib"
 	"golang.org/x/oauth2"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	VERSION string = "0.7.1"
+	VERSION string = "0.8.0"
 	// which branch to observe for changes:
 	OBSERVE_BRANCH string = "dcos"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -186,6 +190,66 @@ func unregisterHook() string {
 	return fmt.Sprintf("Unregistered hook")
 }
 
+// from http://stackoverflow.com/questions/20357223/easy-way-to-unzip-file-with-golang
+func unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		fpath := filepath.Join(dest, f.Name)
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fpath, f.Mode())
+		} else {
+			var fdir string
+			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
+				fdir = fpath[:lastIndex]
+			}
+
+			err = os.MkdirAll(fdir, f.Mode())
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+			f, err := os.OpenFile(
+				fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func pull(owner, repo, workdir string) error {
+	if owner == "" && repo == "" {
+		return fmt.Errorf("Don't know where to pull from since no owner or repo set")
+	}
+	// theURL := "https://github.com/" + owner + "/" + repo + "/archive/" + OBSERVE_BRANCH + ".zip"
+	theURL := "https://github.com/" + owner + "/" + repo + "/archive/master.zip"
+	dploy.Download(theURL, workdir)
+
+	err := unzip("dcos.zip", "dcos")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func bootstrap() {
 	log.WithFields(log.Fields{"boostrep": "step"}).Debug("Starting bootstrap process ...")
 	time.Sleep(time.Second * DEFAULT_OBSERVER_WAIT_TIME) // wait for Mesos-DNS to kick in
@@ -217,11 +281,19 @@ func main() {
 		fmt.Fprint(w, `{"result":"`+result+`"}`)
 	})
 	mux.HandleFunc("/dploy", func(w http.ResponseWriter, r *http.Request) {
-		//pull(owner, repo)
-		//success := dploy.Run(os.Getwd(), false)
 		dr := DployResult{}
-		dr.success = true
-		dr.msg = "ok"
+		cwd, _ := os.Getwd()
+		err := pull(owner, repo, cwd)
+		if err != nil {
+			dr.success = false
+			dr.msg = fmt.Sprintf("Not able to pull new version of %s/%s due to %v", owner, repo, err)
+			w.Header().Set("Content-Type", "application/javascript")
+			fmt.Fprint(w, json.NewEncoder(w).Encode(dr))
+			return
+		}
+		success := dploy.Run(cwd, false)
+		dr.success = success
+		dr.msg = fmt.Sprintf("New version of %s/%s deployed", owner, repo)
 		w.Header().Set("Content-Type", "application/javascript")
 		fmt.Fprint(w, json.NewEncoder(w).Encode(dr))
 	})

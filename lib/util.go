@@ -16,6 +16,13 @@ import (
 	"time"
 )
 
+func Download(theURL string, intoDir string) string {
+	u, _ := url.Parse(theURL)
+	fn, c := fetch(*u)
+	writeData(filepath.Join(intoDir, fn), c)
+	return fn
+}
+
 func setLogLevel() {
 	logLevel := os.Getenv(ENV_VAR_DPLOY_LOGLEVEL)
 	switch strings.ToLower(logLevel) {
@@ -60,13 +67,6 @@ func writeData(fileName string, data string) {
 	bytesWritten, err := f.WriteString(data)
 	f.Sync()
 	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
-}
-
-func download(theURL string, intoDir string) string {
-	u, _ := url.Parse(theURL)
-	fn, c := fetch(*u)
-	writeData(filepath.Join(intoDir, fn), c)
-	return fn
 }
 
 func fetch(theURL url.URL) (string, string) {
@@ -115,7 +115,7 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		owner := strings.Split(owpo, "/")[0]
 		repo := strings.Split(owpo, "/")[1]
 		log.WithFields(log.Fields{"observer": "launch"}).Debug("Got repo ", owner, "/", repo)
-		fn := download(MARATHON_OBSERVER_TEMPLATE, workdir)
+		fn := Download(MARATHON_OBSERVER_TEMPLATE, workdir)
 		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
 		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
 		appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)

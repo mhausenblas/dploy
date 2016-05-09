@@ -78,11 +78,11 @@ func Init(workdir string, showAll bool) bool {
 	ex := os.Getenv(ENV_VAR_DPLOY_EXAMPLES)
 	switch strings.ToLower(ex) {
 	case "all":
-		download(EXAMPLE_HELLO_WORLD, specsDir)
-		download(EXAMPLE_BUZZ, specsDir)
+		Download(EXAMPLE_HELLO_WORLD, specsDir)
+		Download(EXAMPLE_BUZZ, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with some examples\n")
 	case "buzz":
-		download(EXAMPLE_BUZZ, specsDir)
+		Download(EXAMPLE_BUZZ, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
 	default:
 	}
