@@ -5,7 +5,7 @@
 	"container": {
 		"type": "DOCKER",
 		"docker": {
-			"image": "mhausenblas/dploy-observer:0.6.0",
+			"image": "mhausenblas/dploy-observer:0.7.0",
 			"forcePullImage": true,
 			"network": "BRIDGE",
 			"portMappings": [
