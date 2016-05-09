@@ -16,9 +16,11 @@ import (
 )
 
 const (
-	VERSION                    string        = "0.7.0"
-	OBSERVE_BRANCH             string        = "dcos"
-	DEFAULT_OBSERVER_WAIT_TIME time.Duration = 10
+	VERSION string = "0.7.1"
+	// which branch to observe for changes:
+	OBSERVE_BRANCH string = "dcos"
+	// how long to wait (in sec) after launch to register Webhook:
+	DEFAULT_OBSERVER_WAIT_TIME time.Duration = 30
 )
 
 var (
@@ -185,8 +187,11 @@ func unregisterHook() string {
 }
 
 func bootstrap() {
+	log.WithFields(log.Fields{"boostrep": "step"}).Debug("Starting bootstrap process ...")
 	time.Sleep(time.Second * DEFAULT_OBSERVER_WAIT_TIME) // wait for Mesos-DNS to kick in
+	log.WithFields(log.Fields{"boostrep": "step"}).Debug("Waited long enough now for Mesos-DNS, registering Webhook")
 	result := registerHook()
+	log.WithFields(log.Fields{"boostrep": "step"}).Debug(result)
 	fmt.Printf("%s\n", result)
 }
 
