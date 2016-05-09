@@ -26,7 +26,7 @@ Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/
 - [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
 - [github.com/olekukonko/tablewriter](https://github.com/olekukonko/tablewriter), a ACSII table formatter.
 
-## Commands
+## Features
 
 - [x] `dploy init` … creates a new µS-based app
 - [x] `dploy dryrun` … validates deployment of the µS-based app
@@ -35,14 +35,12 @@ Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/
 - [x] `dploy ls` … lists the resources of the µS-based app
 - [x] `dploy ps` … lists runtime properties of the µS-based app
 - [x] `dploy scale`… scales the µS-based app
+- [x] Support push-to-deploy, see [observer](observer/)
+- [ ] Expose metrics via `dploy -all ps`
+- [ ] Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
+- [ ] Advanced µS examples using linkerd, VAMP
 - [ ] `dploy publish` … publishes the the µS-based app into the DC/OS Universe
-
-Additional things planned:
-
-- Expose metrics via `dploy -all ps`
-- Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
-- tracing using Zipkin: [Mesos scheduler](http://elodina.github.io/zipkin-mesos-framework/) and [Go lib](http://elodina.github.io/go-zipkin/)
-- advanced µS examples using linkerd, VAMP
+- [ ] Enable tracing using Zipkin: [Mesos scheduler](http://elodina.github.io/zipkin-mesos-framework/) and [Go lib](http://elodina.github.io/go-zipkin/)
 
 ## Docs
 
