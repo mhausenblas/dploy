@@ -41,6 +41,9 @@ const (
 type DployApp struct {
 	MarathonURL string `yaml:"marathon_url"`
 	AppName     string `yaml:"app_name"`
+	RepoURL     string `yaml:"repo_url,omitempty"`
+	PublicNode  string `yaml:"public_node,omitempty"`
+	PAToken     string `yaml:"pat,omitempty"`
 }
 
 // Init creates an app descriptor (dploy.app) and the `specs/` directory
@@ -124,7 +127,17 @@ func DryRun(workdir string, showAll bool) bool {
 			return false
 		}
 	}
-	fmt.Printf("%s\tNow you can launch your app using `dploy run` or `dploy ls` to list resources.\n", USER_MSG_INFO)
+	// check for optional push-to-deploy info,
+	// i.e. both a GitHub repo URL and a public node
+	// have been set in the `dploy.app` file
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && appDescriptor.PAToken != "" {
+		fmt.Printf("%s\tFound stuff I need for push-to-deploy:\n", USER_MSG_SUCCESS)
+		fmt.Printf("\tGitHub repo %s\n", appDescriptor.RepoURL)
+		fmt.Printf("\tPublic node %s\n", appDescriptor.PublicNode)
+		fmt.Printf("\tGitHub personal access token %s\n", strings.Repeat("*", len(appDescriptor.PAToken)))
+	}
+	fmt.Printf("%s\tNow you can use `dploy ls` to list resources of your app\n", USER_MSG_INFO)
+	fmt.Printf("\tor `dploy run` to launch it via Marathon.\n")
 	return true
 }
 

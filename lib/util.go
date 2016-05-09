@@ -99,6 +99,10 @@ func readAppDescriptor() DployApp {
 	return appDescriptor
 }
 
+func launchObserver() {
+
+}
+
 func getAppSpecs(workdir string) []string {
 	appSpecDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
 	log.WithFields(log.Fields{"marathon": "get_app_specs"}).Debug("Trying to find app specs in ", appSpecDir)
