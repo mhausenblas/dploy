@@ -22,7 +22,7 @@ import (
 const (
 	VERSION string = "0.8.1"
 	// which branch to observe for changes:
-	OBSERVE_BRANCH string = "dcos"
+	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
 	DEFAULT_OBSERVER_WAIT_TIME time.Duration = 30
 )
@@ -43,8 +43,11 @@ var (
 	// Web hook used to trigger deployment
 	deployHook *github.Hook
 
-	// how long to wait to register Webhook
+	// how long to wait to register Webhook (default: DEFAULT_OBSERVER_WAIT_TIME)
 	registerDelay time.Duration
+
+	// which branch to observe for push events (default: DEFAULT_OBSERVE_BRANCH)
+	targetBranch string
 )
 
 type DployResult struct {
@@ -66,6 +69,7 @@ type SRVRecord struct {
 func init() {
 	mux = http.NewServeMux()
 	registerDelay = DEFAULT_OBSERVER_WAIT_TIME
+	targetBranch = DEFAULT_OBSERVE_BRANCH
 	grabEnv() // try via env variables first
 	flag.StringVar(&pat, "pat", pat, "the personal access token, via https://github.com/settings/tokens")
 	flag.StringVar(&owner, "owner", owner, "the GitHub owner, for example 'mhausenblas' or 'mesosphere'.")
@@ -87,6 +91,9 @@ func grabEnv() {
 	if dr := os.Getenv("DPLOY_OBSERVER_DELAY_REGISTRATION"); dr != "" {
 		rd, _ := strconv.ParseUint(dr, 10, 64)
 		registerDelay = time.Duration(rd)
+	}
+	if tb := os.Getenv("DPLOY_OBSERVER_TARGETBRANCH"); tb != "" {
+		targetBranch = tb
 	}
 }
 
@@ -238,11 +245,13 @@ func pull(owner, repo, workdir string) error {
 	if owner == "" && repo == "" {
 		return fmt.Errorf("Don't know where to pull from since no owner or repo set")
 	}
-	// theURL := "https://github.com/" + owner + "/" + repo + "/archive/" + OBSERVE_BRANCH + ".zip"
-	theURL := "https://github.com/" + owner + "/" + repo + "/archive/master.zip"
+	theURL := "https://github.com/" + owner + "/" + repo + "/archive/" + targetBranch + ".zip"
 	dploy.Download(theURL, workdir)
-
-	err := unzip("dcos.zip", "dcos")
+	td, _ := filepath.Abs(filepath.Join(workdir, targetBranch))
+	if _, err := os.Stat(td); os.IsExist(err) {
+		os.RemoveAll(td)
+	}
+	err := unzip(targetBranch+".zip", td)
 	if err != nil {
 		return err
 	}
@@ -261,7 +270,7 @@ func bootstrap() {
 func main() {
 	log.SetLevel(log.DebugLevel)
 	fmt.Printf("This is dploy observer version %s\n", VERSION)
-	fmt.Printf("I'm observing branch %s of repo %s/%s trying to serve on node %s\n", OBSERVE_BRANCH, owner, repo, pubnode)
+	fmt.Printf("I'm observing branch %s of repo %s/%s trying to serve on node %s\n", targetBranch, owner, repo, pubnode)
 	auth()
 	go bootstrap()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
