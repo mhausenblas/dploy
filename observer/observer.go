@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	VERSION string = "0.9.3"
+	VERSION string = "0.9.4"
 	// which branch to observe for changes:
-	DEFAULT_OBSERVE_BRANCH string = "master"
+	DEFAULT_OBSERVE_BRANCH string = "dcos"
 	// how long to wait (in sec) after launch to register Webhook:
 	DEFAULT_OBSERVER_WAIT_TIME time.Duration = 30
 )

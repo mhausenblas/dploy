@@ -167,6 +167,9 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", patoken)
 			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
 			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
+			if branch := appDescriptor.TriggerBranch; branch != "" {
+				appSpec.AddEnv("DPLOY_OBSERVER_TARGETBRANCH", branch)
+			}
 			log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
 			if _, err := os.Stat(observerTemplate); err == nil {
 				os.Remove(observerTemplate)

@@ -41,10 +41,11 @@ const (
 // DployApp is the dploy application deployment descriptor, in short: app descriptor.
 // It defines the connection to the target DC/OS cluster as well as the app properties.
 type DployApp struct {
-	MarathonURL string `yaml:"marathon_url"`
-	AppName     string `yaml:"app_name"`
-	RepoURL     string `yaml:"repo_url,omitempty"`
-	PublicNode  string `yaml:"public_node,omitempty"`
+	MarathonURL   string `yaml:"marathon_url"`
+	AppName       string `yaml:"app_name"`
+	RepoURL       string `yaml:"repo_url,omitempty"`
+	PublicNode    string `yaml:"public_node,omitempty"`
+	TriggerBranch string `yaml:"trigger_branch,omitempty"`
 }
 
 // Init creates an app descriptor (dploy.app) and the `specs/` directory
