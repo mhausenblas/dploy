@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	VERSION string = "0.9.4"
+	VERSION string = "1.0.0"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "dcos"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -425,7 +425,7 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
-		success := dploy.Run(repo+"-"+targetBranch, false)
+		success := dploy.Upgrade(repo+"-"+targetBranch, false)
 		lastDeployment = time.Now()
 		dr.Success = success
 		dr.Msg = fmt.Sprintf("New version of %s/%s deployed at %s", owner, repo, lastDeployment)

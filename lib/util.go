@@ -406,7 +406,7 @@ func marathonAppRuntime(marathonURL url.URL, dployAppName string) []marathon.App
 	}
 	for _, app := range applications.Apps {
 		if app.Labels != nil {
-			log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("Checking application ", app.ID, " against label ", dployAppName)
+			log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("Checking app ", app.ID, " against label ", dployAppName)
 			for k, v := range *app.Labels {
 				log.WithFields(log.Fields{"marathon": "app_runtime"}).Debug("LABEL: ", k, " VALUE: ", v)
 				if k == MARATHON_LABEL && v == dployAppName {
@@ -426,21 +426,38 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 		if appSpec != nil {
 			app, err := client.CreateApplication(appSpec)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create application due to:\n\t", err)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create app due to ", err)
 			} else {
-				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("Created app ", app.ID)
 				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
 			}
 			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		} else {
 			err := client.CreateGroup(group)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create group due to:\n\t", err)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create group due to ", err)
 			} else {
-				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created group ", group.ID)
+				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("Created group ", group.ID)
 				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", group)
 			}
 			client.WaitOnGroup(group.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+		}
+	}
+}
+
+func marathonUpdateApps(marathonURL url.URL, dployAppName string, workdir string) {
+	client := marathonClient(marathonURL)
+	appSpecs := getAppSpecs(workdir)
+	for _, specFilename := range appSpecs {
+		appSpec, _ := readAppSpec(dployAppName, specFilename)
+		if appSpec != nil {
+			_, err := client.UpdateApplication(appSpec, true) // note: for now we default to force updates
+			if err != nil {
+				log.WithFields(log.Fields{"marathon": "update_app"}).Error("Failed to update app due to ", err)
+			} else {
+				log.WithFields(log.Fields{"marathon": "update_app"}).Debug("Updated app: ", appSpec.ID)
+			}
+			client.WaitOnApplication(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
 }
@@ -453,7 +470,7 @@ func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string
 		if appSpec != nil {
 			_, err := client.DeleteApplication(appSpec.ID)
 			if err != nil {
-				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Failed to delete application ", appSpec.ID, " due to ", err)
+				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Failed to delete app ", appSpec.ID, " due to ", err)
 			} else {
 				log.WithFields(log.Fields{"marathon": "delete_app"}).Info("Deleted app ", appSpec.ID)
 			}

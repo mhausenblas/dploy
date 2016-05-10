@@ -62,7 +62,7 @@ func Init(workdir string, showAll bool) bool {
 	appDescriptor.AppName = DEFAULT_APP_NAME
 	d, err := yaml.Marshal(&appDescriptor)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "init"}).Error("Failed to serialize dploy app descriptor due to error: ", err)
+		log.WithFields(log.Fields{"cmd": "init"}).Error("Failed to serialize dploy app descriptor due to ", err)
 		return false
 	}
 	log.WithFields(log.Fields{"cmd": "init"}).Debug("Trying to create app descriptor ", APP_DESCRIPTOR_FILENAME, " with following content:\n", string(d))
@@ -100,7 +100,7 @@ func DryRun(workdir string, showAll bool) bool {
 	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "dryrun"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"cmd": "dryrun"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	info := marathonGetInfo(*marathonURL)
@@ -152,7 +152,7 @@ func Run(workdir string, showAll bool) bool {
 	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "run"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"cmd": "run"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
@@ -174,7 +174,7 @@ func Destroy(workdir string, showAll bool) bool {
 	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "destroy"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"cmd": "destroy"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
@@ -212,7 +212,7 @@ func ListRuntimeProperties(workdir string, showAll bool) bool {
 	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "ps"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"cmd": "ps"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	myApps := marathonAppRuntime(*marathonURL, appDescriptor.AppName)
@@ -285,7 +285,7 @@ func Scale(workdir string, showAll bool, pid string, instances int) bool {
 	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "scale"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"cmd": "scale"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	client := marathonClient(*marathonURL)
@@ -297,5 +297,19 @@ func Scale(workdir string, showAll bool, pid string, instances int) bool {
 		fmt.Printf("%s\tSuccessfully scaled app %s to %d instances\n", USER_MSG_SUCCESS, pid, instances)
 	}
 	return true
+}
 
+// Upgrade updates all µS using app specs via Marathon.
+// It is not used by the CLI but rather via the observer
+// service to upgrade on push to a GitHub repo (/dploy handler)
+func Upgrade(workdir string) bool {
+	setLogLevel()
+	appDescriptor := readAppDescriptor(workdir)
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.WithFields(log.Fields{"cmd": "updgrade"}).Error("Failed to connect to Marathon due to ", err)
+		return false
+	}
+	marathonUpdateApps(*marathonURL, appDescriptor.AppName, workdir)
+	return true
 }
