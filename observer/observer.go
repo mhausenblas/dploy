@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	VERSION string = "0.9.2"
+	VERSION string = "0.9.3"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -416,7 +416,7 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
-		perr := patchMarathon(cwd)
+		perr := patchMarathon(repo + "-" + targetBranch)
 		if perr != nil {
 			dr.Success = false
 			dr.Msg = fmt.Sprintf("Not able to patch Marathon URL due to %v", perr)

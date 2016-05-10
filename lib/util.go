@@ -143,6 +143,9 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
 		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
 		log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
+		if _, err := os.Stat(observerTemplate); err == nil {
+			os.Remove(observerTemplate)
+		}
 		if appSpec != nil {
 			app, err := client.CreateApplication(appSpec)
 			if err != nil {
