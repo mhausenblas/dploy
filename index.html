@@ -27,7 +27,7 @@
         <div><a class="header" href="#ps">ps</a></div>
         <div><a class="header" href="#scale">scale</a></div>
         <div><a href="#publish">publish</a></div>
-        <h2 class="header">Version: 0.7</h2>
+        <h2 class="header">Version: 0.8</h2>
       </header>
       <section>
         <h1>
@@ -61,12 +61,12 @@ For a more complete end-to-end example, you can check out the <a href="https://g
 $ go build
 </code></pre>
 
-<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.7.0" target="_new">download binaries</a> for Linux, OSX, and Windows or use it via Docker</p>
+<p>Alternatively, you can <a href="https://github.com/mhausenblas/dploy/releases/tag/0.8.2" target="_new">download binaries</a> for Linux, Mac OS X, and Windows or use it via Docker</p>
 
-<pre><code>$ docker pull mhausenblas/dploy:0.7.0
+<pre><code>$ docker pull mhausenblas/dploy:0.8.2
 
 # you can use dploy as follows then (note the usage of the volume):
-$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.7.0 -workspace=/tmp init
+$ docker run --rm -it -v /Users/mhausenblas/tmp:/tmp mhausenblas/dploy:0.8.2 -workspace=/tmp init
 </code></pre>
 
 <h2>
@@ -188,6 +188,9 @@ report issues and also how to contribute to this project.
 <a id="run" class="anchor" href="#dploy-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>dploy run</h4>
 <p>
     This command launches the app as defined in the app descriptor and the app specs. It scans the <code>specs/</code> directory for Marathon app specs and launches them using the Marathon API.
+</p>
+<p>
+    Note that if you've executed this command at least once you can use a <code>git push</code> to upgrade your <code>dploy</code> app; learn more about how to do this in the <a href="https://github.com/mhausenblas/dploy/tree/master/observer" target="_new">observer</a> component docs.
 </p>
 <p><strong>Usage</strong>:</p>
 <pre><code>$ dploy run</code></pre>
