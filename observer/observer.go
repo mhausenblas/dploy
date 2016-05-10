@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	VERSION string = "0.9.0"
+	VERSION string = "0.9.1"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -95,6 +95,20 @@ func init() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+	cwd, _ := os.Getwd()
+	stashPAT(cwd)
+}
+
+func stashPAT(workdir string) {
+	patFile, _ := filepath.Abs(filepath.Join(workdir, dploy.MARATHON_OBSERVER_PAT_FILE))
+	f, err := os.Create(patFile)
+	if err != nil {
+		log.WithFields(log.Fields{"pat": "stash"}).Error("Can't create ", patFile, " due to ", err)
+	}
+	bytesWritten, err := f.WriteString(pat)
+	f.Sync()
+	log.WithFields(log.Fields{"pat": "stash"}).Debug("Stashed GitHub Personal Access Token file ", patFile, ", ", bytesWritten, " Bytes written to disk.")
+
 }
 
 // Grabs the necessary parameter (GitHub personal access token, owner and repo)
