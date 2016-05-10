@@ -24,6 +24,7 @@ const (
 	MARATHON_APP_SPEC_EXT      string        = ".json"
 	MARATHON_LABEL             string        = "DPLOY"
 	MARATHON_OBSERVER_TEMPLATE string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/observer/observer.json"
+	MARATHON_OBSERVER_PAT_FILE string        = ".pat"
 	RESOURCETYPE_PLATFORM      string        = "platform"
 	RESOURCETYPE_APP           string        = "app"
 	RESOURCETYPE_GROUP         string        = "group"
@@ -44,7 +45,6 @@ type DployApp struct {
 	AppName     string `yaml:"app_name"`
 	RepoURL     string `yaml:"repo_url,omitempty"`
 	PublicNode  string `yaml:"public_node,omitempty"`
-	PAToken     string `yaml:"pat,omitempty"`
 }
 
 // Init creates an app descriptor (dploy.app) and the `specs/` directory
@@ -131,11 +131,12 @@ func DryRun(workdir string, showAll bool) bool {
 	// check for optional push-to-deploy info,
 	// i.e. both a GitHub repo URL and a public node
 	// have been set in the `dploy.app` file
-	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && appDescriptor.PAToken != "" {
+	patoken, patExists := getPAT(workdir)
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists {
 		fmt.Printf("%s\tFound stuff I need for push-to-deploy:\n", USER_MSG_SUCCESS)
 		fmt.Printf("\tGitHub repo %s\n", appDescriptor.RepoURL)
 		fmt.Printf("\tPublic node %s\n", appDescriptor.PublicNode)
-		fmt.Printf("\tGitHub personal access token %s\n", strings.Repeat("*", len(appDescriptor.PAToken)))
+		fmt.Printf("\tGitHub personal access token %s\n", strings.Repeat("*", len(patoken)))
 	}
 	fmt.Printf("%s\tNow you can use `dploy ls` to list resources of your app\n", USER_MSG_INFO)
 	fmt.Printf("\tor `dploy run` to launch it via Marathon.\n")

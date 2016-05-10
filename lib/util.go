@@ -106,16 +106,26 @@ func readAppDescriptor(workdir string) DployApp {
 	return appDescriptor
 }
 
+func getPAT(workdir string) (string, bool) {
+	pat, _ := filepath.Abs(filepath.Join(workdir, MARATHON_OBSERVER_PAT_FILE))
+	patoken, err := ioutil.ReadFile(pat)
+	if err != nil {
+		log.WithFields(log.Fields{"pat": "read"}).Error("Can't read GitHub Personal Access Token file ", err)
+		return "", false
+	}
+	return string(patoken), true
+}
+
 func launchObserver(appDescriptor DployApp, workdir string) bool {
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to error ", err)
+		log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	client := marathonClient(*marathonURL)
-	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && appDescriptor.PAToken != "" {
+	patoken, patExists := getPAT(workdir)
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists {
 		// TBD: check if observer already runs and if not
-
 		// https://github.com/OWNER/REPO -> OWNER, REPO
 		owpo := appDescriptor.RepoURL[len("https://github.com/"):]
 		owner := strings.Split(owpo, "/")[0]
@@ -129,7 +139,7 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
 		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
 		appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)
-		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", appDescriptor.PAToken)
+		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", patoken)
 		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
 		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
 		log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
