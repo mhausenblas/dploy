@@ -110,7 +110,7 @@ func getPAT(workdir string) (string, bool) {
 	pat, _ := filepath.Abs(filepath.Join(workdir, MARATHON_OBSERVER_PAT_FILE))
 	patoken, err := ioutil.ReadFile(pat)
 	if err != nil {
-		log.WithFields(log.Fields{"pat": "read"}).Error("Can't read GitHub Personal Access Token file ", err)
+		log.WithFields(log.Fields{"pat": "read"}).Debug("Can't read GitHub Personal Access Token file ", err)
 		return "", false
 	}
 	return string(patoken), true
