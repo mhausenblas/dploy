@@ -355,7 +355,6 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 			app, err := client.CreateApplication(appSpec)
 			if err != nil {
 				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create application due to:\n\t", err)
-				log.Fatalf("Exiting for now; try running `dploy destroy` first.")
 			} else {
 				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created app ", app.ID)
 				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", app)
@@ -365,7 +364,6 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 			err := client.CreateGroup(group)
 			if err != nil {
 				log.WithFields(log.Fields{"marathon": "create_app"}).Error("Failed to create group due to:\n\t", err)
-				log.Fatalf("Exiting for now; try running `dploy destroy` first.")
 			} else {
 				log.WithFields(log.Fields{"marathon": "create_app"}).Info("Created group ", group.ID)
 				log.WithFields(log.Fields{"marathon": "create_app"}).Debug("App deployment: ", group)

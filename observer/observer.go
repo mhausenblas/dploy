@@ -9,6 +9,7 @@ import (
 	github "github.com/google/go-github/github"
 	dploy "github.com/mhausenblas/dploy/lib"
 	"golang.org/x/oauth2"
+	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 )
 
 const (
-	VERSION string = "0.8.2"
+	VERSION string = "0.9.0"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -48,11 +49,22 @@ var (
 
 	// which branch to observe for push events (default: DEFAULT_OBSERVE_BRANCH)
 	targetBranch string
+
+	// time stamp of the last successful deployment
+	lastDeployment time.Time
 )
 
+type Status struct {
+	Owner        string    `json:"owner"`
+	Repo         string    `json:"repo"`
+	TargetBranch string    `json:"branch"`
+	Pubnode      string    `json:"pubnode"`
+	LastDeploy   time.Time `json:"lastdeploy"`
+}
+
 type DployResult struct {
-	success bool
-	msg     string
+	Success bool   `json:"success"`
+	Msg     string `json:"message"`
 }
 
 type DNSResults struct {
@@ -64,6 +76,11 @@ type SRVRecord struct {
 	Host    string
 	IP      string
 	Port    string
+}
+
+type HostRecord struct {
+	Host string
+	IP   string
 }
 
 func init() {
@@ -107,6 +124,33 @@ func auth() {
 	client = github.NewClient(tc)
 	log.WithFields(log.Fields{"auth": "done"}).Debug("GitHub client ", client)
 	fmt.Printf("Authentication against GitHub done\n")
+}
+
+func marathonURL() string {
+	loc := ""
+	mesosdns := "http://leader.mesos:8123"
+	log.WithFields(log.Fields{"sd": "step"}).Debug("Trying to query HTTP API of ", mesosdns)
+	lookup := "marathon.mesos."
+	resp, err := http.Get(mesosdns + "/v1/hosts/" + lookup)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Can't look up Marathon address due to ", err)
+		return loc
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Error reading response from Mesos-DNS ", err)
+		return loc
+	}
+	var hrecords []HostRecord
+	err = json.Unmarshal(body, &hrecords)
+	if err != nil {
+		log.WithFields(log.Fields{"sd": "step"}).Error("Error decoding JSON object ", err)
+		return loc
+	}
+	loc = "http://" + hrecords[0].IP + ":8080"
+	log.WithFields(log.Fields{"sd": "done"}).Debug("Found Marathon at ", loc)
+	return loc
 }
 
 func whereAmI() string {
@@ -212,7 +256,7 @@ func unzip(src, dest string) error {
 		}
 		defer rc.Close()
 		fpath := filepath.Join(dest, f.Name)
-		log.WithFields(log.Fields{"observe": "unzip"}).Debug("Extracting ", f, " into ", fpath)
+		log.WithFields(log.Fields{"observe": "unzip"}).Debug("Extracting ", fpath)
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, 0755)
 			// os.MkdirAll(fpath, f.Mode())
@@ -253,7 +297,7 @@ func pull(owner, repo, workdir string) error {
 		return fmt.Errorf("Failed to download repo content due to %s", err)
 	}
 	log.WithFields(log.Fields{"observe": "pull"}).Debug("Downloaded ", repoURL, " into ", workdir)
-	td, _ := filepath.Abs(filepath.Join(workdir, targetBranch))
+	td, _ := filepath.Abs(filepath.Join(workdir, ""))
 	if _, err := os.Stat(td); os.IsExist(err) {
 		os.RemoveAll(td)
 	}
@@ -262,6 +306,37 @@ func pull(owner, repo, workdir string) error {
 		return uerr
 	}
 	log.WithFields(log.Fields{"observe": "pull"}).Debug("Extracted ", targetBranch+".zip", " into ", td)
+	return nil
+}
+
+func patchMarathon(workdir string) error {
+	ad, _ := filepath.Abs(filepath.Join(workdir, dploy.APP_DESCRIPTOR_FILENAME))
+	log.WithFields(log.Fields{"observer": "patchmarathon"}).Debug("Trying to read app descriptor ", ad)
+	d, err := ioutil.ReadFile(ad)
+	if err != nil {
+		return fmt.Errorf("Failed to read app descriptor due to", err)
+	}
+	appDescriptor := dploy.DployApp{}
+	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
+	if uerr != nil {
+		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to de-serialize app descriptor due to %v", uerr)
+		return fmt.Errorf("Failed to de-serialize app descriptor due to ", uerr)
+	}
+	log.WithFields(log.Fields{"observer": "patchmarathon"}).Debug("Got valid app descriptor ")
+	appDescriptor.MarathonURL = marathonURL()
+	ob, merr := yaml.Marshal(&appDescriptor)
+	if merr != nil {
+		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to serialize app descriptor due to %v", merr)
+		return fmt.Errorf("Failed to serialize app descriptor due to ", merr)
+	}
+	f, perr := os.Create(ad)
+	if perr != nil {
+		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Can't create ", ad, " due to ", perr)
+		return fmt.Errorf("Failed to serialize app descriptor due to ", perr)
+	}
+	bytesWritten, err := f.Write(ob)
+	f.Sync()
+	log.WithFields(log.Fields{"observer": "patchmarathon"}).Debug("Patched ", ad, ", ", bytesWritten, " Bytes written to disk.")
 	return nil
 }
 
@@ -282,7 +357,17 @@ func main() {
 	go bootstrap()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
-		fmt.Fprint(w, `{"status":"ok"}`)
+
+		s := &Status{
+			Owner:        owner,
+			Repo:         repo,
+			TargetBranch: targetBranch,
+			Pubnode:      pubnode,
+			LastDeploy:   lastDeployment,
+		}
+		sb, _ := json.Marshal(s)
+		w.Header().Set("Content-Type", "application/javascript")
+		fmt.Fprint(w, string(sb))
 	})
 	mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		result := registerHook()
@@ -296,21 +381,34 @@ func main() {
 		fmt.Fprint(w, `{"result":"`+result+`"}`)
 	})
 	mux.HandleFunc("/dploy", func(w http.ResponseWriter, r *http.Request) {
-		dr := DployResult{}
+		dr := &DployResult{}
 		cwd, _ := os.Getwd()
 		err := pull(owner, repo, cwd)
 		if err != nil {
-			dr.success = false
-			dr.msg = fmt.Sprintf("Not able to pull new version of %s/%s due to %v", owner, repo, err)
+			dr.Success = false
+			dr.Msg = fmt.Sprintf("Not able to pull new version of %s/%s due to %v", owner, repo, err)
+			drb, _ := json.Marshal(dr)
 			w.Header().Set("Content-Type", "application/javascript")
-			fmt.Fprint(w, json.NewEncoder(w).Encode(dr))
+			fmt.Fprint(w, string(drb))
 			return
 		}
-		success := dploy.Run(cwd, false)
-		dr.success = success
-		dr.msg = fmt.Sprintf("New version of %s/%s deployed", owner, repo)
+		perr := patchMarathon(cwd)
+		if perr != nil {
+			dr.Success = false
+			dr.Msg = fmt.Sprintf("Not able to patch Marathon URL due to %v", perr)
+			drb, _ := json.Marshal(dr)
+			w.Header().Set("Content-Type", "application/javascript")
+			fmt.Fprint(w, string(drb))
+			return
+		}
+		success := dploy.Run(repo+"-"+targetBranch, false)
+		lastDeployment = time.Now()
+		dr.Success = success
+		dr.Msg = fmt.Sprintf("New version of %s/%s deployed at %s", owner, repo, lastDeployment)
+		drb, _ := json.Marshal(dr)
 		w.Header().Set("Content-Type", "application/javascript")
-		fmt.Fprint(w, json.NewEncoder(w).Encode(dr))
+		fmt.Fprint(w, string(drb))
+
 	})
 	log.Fatal(http.ListenAndServe(":8888", mux))
 }
