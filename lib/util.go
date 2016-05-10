@@ -116,6 +116,28 @@ func getPAT(workdir string) (string, bool) {
 	return string(patoken), true
 }
 
+func observerAlive(marathonURL url.URL, appID string) bool {
+	client := marathonClient(marathonURL)
+	appRuntime, err := client.Application(appID)
+	if err != nil {
+		log.WithFields(log.Fields{"observer": "check"}).Debug("Observer status not available")
+		return false
+	}
+	if appRuntime.Tasks != nil && len(appRuntime.Tasks) > 0 {
+		health, _ := client.ApplicationOK(appRuntime.ID)
+		if health {
+			log.WithFields(log.Fields{"observer": "check"}).Debug("Observer is healthy")
+			return true
+		} else {
+			log.WithFields(log.Fields{"observer": "check"}).Debug("Observer is NOT healthy")
+			return false
+		}
+	} else {
+		log.WithFields(log.Fields{"marathon": "app_status"}).Debug("Observer NO TASKS found")
+		return false
+	}
+}
+
 func launchObserver(appDescriptor DployApp, workdir string) bool {
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
@@ -125,7 +147,6 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 	client := marathonClient(*marathonURL)
 	patoken, patExists := getPAT(workdir)
 	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists {
-		// TBD: check if observer already runs and if not
 		// https://github.com/OWNER/REPO -> OWNER, REPO
 		owpo := appDescriptor.RepoURL[len("https://github.com/"):]
 		owner := strings.Split(owpo, "/")[0]
@@ -138,30 +159,65 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		}
 		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
 		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
-		appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)
-		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", patoken)
-		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
-		appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
-		log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
-		if _, err := os.Stat(observerTemplate); err == nil {
-			os.Remove(observerTemplate)
-		}
-		if appSpec != nil {
-			app, err := client.CreateApplication(appSpec)
-			if err != nil {
-				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to launch observer due to ", err)
-				return false
-			} else {
-				log.WithFields(log.Fields{"observer": "launch"}).Info("Launched observer with ID ", app.ID)
-			}
-			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
-			if err != nil {
-				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to ", err)
-				return false
-			}
+
+		if ok := observerAlive(*marathonURL, appSpec.ID); ok {
 			return true
 		} else {
+			appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)
+			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_PAT", patoken)
+			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_OWNER", owner)
+			appSpec.AddEnv("DPLOY_OBSERVER_GITHUB_REPO", repo)
+			log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
+			if _, err := os.Stat(observerTemplate); err == nil {
+				os.Remove(observerTemplate)
+			}
+			if appSpec != nil {
+				app, err := client.CreateApplication(appSpec)
+				if err != nil {
+					log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to launch observer due to ", err)
+					return false
+				} else {
+					log.WithFields(log.Fields{"observer": "launch"}).Info("Launched observer with ID ", app.ID)
+				}
+				client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+				if err != nil {
+					log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to ", err)
+					return false
+				}
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+	return false
+}
+
+func killObserver(appDescriptor DployApp, workdir string) bool {
+	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
+	if err != nil {
+		log.WithFields(log.Fields{"observer": "kilil"}).Error("Failed to connect to Marathon due to ", err)
+		return false
+	}
+	client := marathonClient(*marathonURL)
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" {
+		fn, err := Download(MARATHON_OBSERVER_TEMPLATE, workdir)
+		if err != nil {
+			log.WithFields(log.Fields{"observer": "kill"}).Error("Failed to download observer template due to ", err)
 			return false
+		}
+		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
+		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
+		if ok := observerAlive(*marathonURL, appSpec.ID); ok {
+			_, err := client.DeleteApplication(appSpec.ID)
+			if err != nil {
+				log.WithFields(log.Fields{"observer": "kill"}).Info("Failed to kill observer")
+				return false
+			}
+			log.WithFields(log.Fields{"observer": "kill"}).Info("Killed observer")
+			client.WaitOnDeployment(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
+			// TODO: unregister Webhook as well
+			return true
 		}
 	}
 	return false
