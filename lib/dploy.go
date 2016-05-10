@@ -135,9 +135,12 @@ func DryRun(workdir string, showAll bool) bool {
 	patoken, patExists := getPAT(workdir)
 	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists {
 		fmt.Printf("%s\tFound stuff I need for push-to-deploy:\n", USER_MSG_SUCCESS)
-		fmt.Printf("\tGitHub repo %s\n", appDescriptor.RepoURL)
-		fmt.Printf("\tPublic node %s\n", appDescriptor.PublicNode)
-		fmt.Printf("\tGitHub personal access token %s\n", strings.Repeat("*", len(patoken)))
+		fmt.Printf("\tGitHub repo: %s\n", appDescriptor.RepoURL)
+		fmt.Printf("\tPublic node: %s\n", appDescriptor.PublicNode)
+		fmt.Printf("\tGitHub personal access token: %s\n", strings.Repeat("*", len(patoken)))
+		if branch := appDescriptor.TriggerBranch; branch != "" {
+			fmt.Printf("\tTrigger branch: %s\n", branch)
+		}
 	}
 	fmt.Printf("%s\tNow you can use `dploy ls` to list resources of your app\n", USER_MSG_INFO)
 	fmt.Printf("\tor `dploy run` to launch it via Marathon.\n")
