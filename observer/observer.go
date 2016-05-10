@@ -425,7 +425,7 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
-		success := dploy.Upgrade(repo+"-"+targetBranch, false)
+		success := dploy.Upgrade(repo + "-" + targetBranch)
 		lastDeployment = time.Now()
 		dr.Success = success
 		dr.Msg = fmt.Sprintf("New version of %s/%s deployed at %s", owner, repo, lastDeployment)
