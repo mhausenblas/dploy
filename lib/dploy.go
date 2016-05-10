@@ -96,7 +96,7 @@ func Init(workdir string, showAll bool) bool {
 func DryRun(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tKicking the tires! Checking Marathon connection, descriptor and app specs ...\n", USER_MSG_INFO)
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "dryrun"}).Error("Failed to connect to Marathon due to error ", err)
@@ -114,7 +114,7 @@ func DryRun(workdir string, showAll bool) bool {
 		fmt.Printf("%s\tTry `dploy init` here first.\n", USER_MSG_INFO)
 		return false
 	} else {
-		appDescriptor := readAppDescriptor()
+		appDescriptor := readAppDescriptor(workdir)
 		if strings.HasPrefix(appDescriptor.MarathonURL, "http") {
 			fmt.Printf("%s\tFound an app descriptor\n", USER_MSG_SUCCESS)
 			if appSpecs := getAppSpecs(workdir); len(appSpecs) > 0 {
@@ -147,7 +147,7 @@ func DryRun(workdir string, showAll bool) bool {
 func Run(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tOK, let's rock and roll! Trying to launch your app ...\n", USER_MSG_INFO)
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "run"}).Error("Failed to connect to Marathon due to error ", err)
@@ -171,7 +171,7 @@ func Run(workdir string, showAll bool) bool {
 func Destroy(workdir string, showAll bool) bool {
 	setLogLevel()
 	fmt.Printf("%s\tSeems you wanna get rid of your app. OK, gonna try and tear it down now ...\n", USER_MSG_INFO)
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "destroy"}).Error("Failed to connect to Marathon due to error ", err)
@@ -188,7 +188,7 @@ func Destroy(workdir string, showAll bool) bool {
 // ListResources lists the resource definitions of the app.
 func ListResources(workdir string, showAll bool) bool {
 	setLogLevel()
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	specsDir, _ := filepath.Abs(filepath.Join(workdir, MARATHON_APP_SPEC_DIR))
 	if _, err := os.Stat(specsDir); os.IsNotExist(err) {
 		fmt.Printf("%s\tDidn't find app spec dir, expecting it in %s\n", USER_MSG_PROBLEM, specsDir)
@@ -208,7 +208,7 @@ func ListResources(workdir string, showAll bool) bool {
 // ListRuntimeProperties lists runtime properties of the app.
 func ListRuntimeProperties(workdir string, showAll bool) bool {
 	setLogLevel()
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "ps"}).Error("Failed to connect to Marathon due to error ", err)
@@ -281,7 +281,7 @@ func ListRuntimeProperties(workdir string, showAll bool) bool {
 // Scale sets the number of instances of a particular µS identified through pid.
 func Scale(workdir string, showAll bool, pid string, instances int) bool {
 	setLogLevel()
-	appDescriptor := readAppDescriptor()
+	appDescriptor := readAppDescriptor(workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
 		log.WithFields(log.Fields{"cmd": "scale"}).Error("Failed to connect to Marathon due to error ", err)

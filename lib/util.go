@@ -16,11 +16,14 @@ import (
 	"time"
 )
 
-func Download(theURL string, intoDir string) string {
+func Download(theURL string, intoDir string) (string, error) {
 	u, _ := url.Parse(theURL)
-	fn, c := fetch(*u)
+	fn, c, err := fetch(*u)
+	if err != nil {
+		return "", err
+	}
 	writeData(filepath.Join(intoDir, fn), c)
-	return fn
+	return fn, nil
 }
 
 func setLogLevel() {
@@ -69,34 +72,37 @@ func writeData(fileName string, data string) {
 	log.WithFields(log.Fields{"file": "write"}).Debug("Created ", fileName, ", ", bytesWritten, " Bytes written to disk.")
 }
 
-func fetch(theURL url.URL) (string, string) {
+func fetch(theURL url.URL) (string, string, error) {
 	response, err := http.Get(theURL.String())
 	fp := strings.Split(theURL.Path, "/")
 	fn := fp[len(fp)-1]
 	if err != nil {
-		log.WithFields(log.Fields{"fetch": "GET"}).Error("Can't fetch content from ", theURL.String(), "due to ", err)
-		return fn, ""
+		log.WithFields(log.Fields{"fetch": "GET"}).Error("Can't fetch content from due to ", err)
+		return fn, "", fmt.Errorf("Can't fetch content from due to %s", err)
 	} else {
 		defer response.Body.Close()
 		c, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			log.WithFields(log.Fields{"fetch": "read"}).Error("Can't read content due to ", err)
+			return fn, "", fmt.Errorf("Can't read content from due to %s", err)
 		}
-		return fn, string(c)
+		return fn, string(c), nil
 	}
 }
 
-func readAppDescriptor() DployApp {
-	log.WithFields(nil).Debug("Trying to read app descriptor ", APP_DESCRIPTOR_FILENAME)
-	d, err := ioutil.ReadFile(APP_DESCRIPTOR_FILENAME)
+func readAppDescriptor(workdir string) DployApp {
+	ad, _ := filepath.Abs(filepath.Join(workdir, APP_DESCRIPTOR_FILENAME))
+	log.WithFields(log.Fields{"appdescriptor": "read"}).Debug("Trying to read app descriptor ", ad)
+	d, err := ioutil.ReadFile(ad)
 	if err != nil {
-		log.Fatalf("Failed to read app descriptor. Error: %v", err)
+		log.Fatalf("Failed to read app descriptor due to %v", err)
 	}
 	appDescriptor := DployApp{}
 	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
 	if uerr != nil {
 		log.Fatalf("Failed to de-serialize app descriptor due to %v", uerr)
 	}
+	log.WithFields(log.Fields{"appdescriptor": "read"}).Debug("Got valid app descriptor ")
 	return appDescriptor
 }
 
@@ -115,7 +121,11 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		owner := strings.Split(owpo, "/")[0]
 		repo := strings.Split(owpo, "/")[1]
 		log.WithFields(log.Fields{"observer": "launch"}).Debug("Got repo ", owner, "/", repo)
-		fn := Download(MARATHON_OBSERVER_TEMPLATE, workdir)
+		fn, err := Download(MARATHON_OBSERVER_TEMPLATE, workdir)
+		if err != nil {
+			log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to download observer template due to ", err)
+			return false
+		}
 		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
 		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
 		appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)
@@ -126,14 +136,14 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		if appSpec != nil {
 			app, err := client.CreateApplication(appSpec)
 			if err != nil {
-				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to launch observer due to: ", err)
+				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to launch observer due to ", err)
 				return false
 			} else {
 				log.WithFields(log.Fields{"observer": "launch"}).Info("Launched observer with ID ", app.ID)
 			}
 			client.WaitOnApplication(app.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 			if err != nil {
-				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to error ", err)
+				log.WithFields(log.Fields{"observer": "launch"}).Error("Failed to connect to Marathon due to ", err)
 				return false
 			}
 			return true

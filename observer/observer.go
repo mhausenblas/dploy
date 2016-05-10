@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	VERSION string = "0.8.1"
+	VERSION string = "0.8.2"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -116,7 +116,7 @@ func whereAmI() string {
 	lookup := "_dploy-observer._tcp.marathon.mesos."
 	resp, err := http.Get(mesosdns + "/v1/services/" + lookup)
 	if err != nil {
-		log.WithFields(log.Fields{"sd": "step"}).Error("Can't look up my address due to error ", err)
+		log.WithFields(log.Fields{"sd": "step"}).Error("Can't look up my address due to ", err)
 		return loc
 	}
 	defer resp.Body.Close()
@@ -212,6 +212,7 @@ func unzip(src, dest string) error {
 		}
 		defer rc.Close()
 		fpath := filepath.Join(dest, f.Name)
+		log.WithFields(log.Fields{"observe": "unzip"}).Debug("Extracting ", f, " into ", fpath)
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, 0755)
 			// os.MkdirAll(fpath, f.Mode())
@@ -242,19 +243,25 @@ func unzip(src, dest string) error {
 }
 
 func pull(owner, repo, workdir string) error {
-	if owner == "" && repo == "" {
+	if owner == "" || repo == "" {
 		return fmt.Errorf("Don't know where to pull from since no owner or repo set")
 	}
-	theURL := "https://github.com/" + owner + "/" + repo + "/archive/" + targetBranch + ".zip"
-	dploy.Download(theURL, workdir)
+	repoURL := "https://github.com/" + owner + "/" + repo + "/archive/" + targetBranch + ".zip"
+	_, err := dploy.Download(repoURL, workdir)
+	if err != nil {
+		log.WithFields(log.Fields{"observer": "pull"}).Error("Failed to download repo content due to ", err)
+		return fmt.Errorf("Failed to download repo content due to %s", err)
+	}
+	log.WithFields(log.Fields{"observe": "pull"}).Debug("Downloaded ", repoURL, " into ", workdir)
 	td, _ := filepath.Abs(filepath.Join(workdir, targetBranch))
 	if _, err := os.Stat(td); os.IsExist(err) {
 		os.RemoveAll(td)
 	}
-	err := unzip(targetBranch+".zip", td)
-	if err != nil {
-		return err
+	uerr := unzip(targetBranch+".zip", td)
+	if uerr != nil {
+		return uerr
 	}
+	log.WithFields(log.Fields{"observe": "pull"}).Debug("Extracted ", targetBranch+".zip", " into ", td)
 	return nil
 }
 
