@@ -25,6 +25,7 @@ Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/
 - [github.com/gambol99/go-marathon](https://github.com/gambol99/go-marathon), an API library for working with Marathon.
 - [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus), a logging library.
 - [github.com/olekukonko/tablewriter](https://github.com/olekukonko/tablewriter), a ACSII table formatter.
+- [github.com/google/go-github/github](https://godoc.org/github.com/google/go-github/github), a GitHub library.
 
 ## Features
 
