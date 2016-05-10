@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	VERSION string = "0.9.1"
+	VERSION string = "0.9.2"
 	// which branch to observe for changes:
 	DEFAULT_OBSERVE_BRANCH string = "master"
 	// how long to wait (in sec) after launch to register Webhook:
@@ -96,19 +96,29 @@ func init() {
 	}
 	flag.Parse()
 	cwd, _ := os.Getwd()
-	stashPAT(cwd)
+	err := stashPAT(cwd)
+	if err != nil {
+		log.WithFields(log.Fields{"observer": "init"}).Error("GitHub Personal Access Token file not available due to ", err)
+	} else {
+		lastDeployment = time.Now()
+	}
 }
 
-func stashPAT(workdir string) {
+func stashPAT(workdir string) error {
 	patFile, _ := filepath.Abs(filepath.Join(workdir, dploy.MARATHON_OBSERVER_PAT_FILE))
 	f, err := os.Create(patFile)
 	if err != nil {
 		log.WithFields(log.Fields{"pat": "stash"}).Error("Can't create ", patFile, " due to ", err)
+		return err
 	}
-	bytesWritten, err := f.WriteString(pat)
+	bytesWritten, werr := f.WriteString(pat)
+	if werr != nil {
+		log.WithFields(log.Fields{"pat": "stash"}).Error("Can't write to ", patFile, " due to ", err)
+		return werr
+	}
 	f.Sync()
 	log.WithFields(log.Fields{"pat": "stash"}).Debug("Stashed GitHub Personal Access Token file ", patFile, ", ", bytesWritten, " Bytes written to disk.")
-
+	return nil
 }
 
 // Grabs the necessary parameter (GitHub personal access token, owner and repo)
