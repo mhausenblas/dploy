@@ -365,11 +365,11 @@ func patchMarathon(workdir string) error {
 }
 
 func bootstrap() {
-	log.WithFields(log.Fields{"boostrep": "step"}).Debug("Starting bootstrap process ...")
+	log.WithFields(log.Fields{"bootstrap": "step"}).Debug("Starting bootstrap process ...")
 	time.Sleep(time.Second * DEFAULT_OBSERVER_WAIT_TIME) // wait for Mesos-DNS to kick in
-	log.WithFields(log.Fields{"boostrep": "step"}).Debug("Waited long enough now for Mesos-DNS, registering Webhook")
+	log.WithFields(log.Fields{"bootstrap": "step"}).Debug("Waited long enough now for Mesos-DNS, registering Webhook")
 	result := registerHook()
-	log.WithFields(log.Fields{"boostrep": "step"}).Debug(result)
+	log.WithFields(log.Fields{"bootstrap": "step"}).Debug(result)
 	fmt.Printf("%s\n", result)
 }
 

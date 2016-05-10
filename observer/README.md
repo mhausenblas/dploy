@@ -1,5 +1,48 @@
 # The push-to-deploy service observer
 
+In v0.8 a new, exciting feature has been introduced: *push-to-deploy*. Via the `observer` sub-component `dploy` is now able to upgrade a running version of your app triggered by a `git push`.
+
+To enable the *push-to-deploy* feature, simply add two more attributes to the descriptor file `dploy.app`:
+
+- `repo_url` … defining the repo you want to push to, for example `https://github.com/mhausenblas/s4d`
+- `public_node` … the IP address or FQDN of the public DC/OS node
+
+So a complete `dploy.app` example content might look as follows:
+
+    marathon_url: http://localhost:8080
+    app_name: mh9test
+    repo_url: https://github.com/mhausenblas/s4d
+    public_node: 52.37.239.156
+    trigger_branch: master
+
+What happens is that with these two additional attributes, `dploy` registers a GitHub [Webhook](https://developer.github.com/webhooks/) the first time you run `dploy run`. From then on you can upgrade your app using  `git push`. Note that the `observer` is by default looking at the `dcos` branch but you can overwrite this using `trigger_branch` as an additional (optional) attribute in the descriptor file (last line of above YAML file).
+
+However, in order to make this work, an additional piece of data (a secret token) is necessary: a GitHub Personal Access Token (PAT). So, go to [github.com/settings/tokens](https://github.com/settings/tokens) and create a token. Let's say the token's value is `123abc*&%xzy`. Copy this token and paste it into a file called `.pat` file in the home directory of the Git repo; for example if the GitHub repo is [mhausenblas/s4d](https://github.com/mhausenblas/s4d) then this is what I'd expect to see on my local machine after cloning it:
+
+```bash
+~/Documents/repos/mhausenblas/s4d (master)$ ls -al
+total 64
+drwxr-xr-x   4 mhausenblas  staff    306 10 May 17:06 .
+drwxr-xr-x  26 mhausenblas  staff    918  8 May 10:59 ..
+-rw-r--r--@  1 mhausenblas  staff   6148  8 May 11:01 .DS_Store
+drwxr-xr-x   8 mhausenblas  staff    510 10 May 17:13 .git
+-rw-r--r--@  1 mhausenblas  staff      4 10 May 11:50 .gitignore
+-rw-r--r--   1 mhausenblas  staff     41 10 May 11:49 .pat
+-rw-r--r--   1 mhausenblas  staff  11357  8 May 10:59 LICENSE
+-rw-r--r--@  1 mhausenblas  staff    149 10 May 15:58 dploy.app
+drwxr-xr-x   2 mhausenblas  staff    136  9 May 19:39 specs
+
+~/Documents/repos/mhausenblas/s4d (master)$ cat .pat
+123abc*&%xzy
+```
+
+Also, note since the GitHub Personal Access Token is a powerful, security-critical piece of data, you don't want to check it into the repo itself: add `.pat` to the `.git-ignore` file!
+
+
+## Development
+
+NOTE: the following is only interesting and necessary for dploy developers, not users.
+
 If a `repo_url` is specified in the app descriptor `dploy.app`, then you can use the `observer` service to: i) automatically register a GitHub [Webhook](https://developer.github.com/webhooks/) for the repo, and ii) trigger a deployment (`dploy run`) every time a `git push` to the `dcos` branch occurs.
 
 Usage (test/development):
@@ -68,4 +111,4 @@ time="2016-05-08T18:48:06Z" level=debug msg="Hook: github.Hook{Name:\"web\", Act
 time="2016-05-08T18:48:07Z" level=debug msg="Registered WebHook github.Hook{CreatedAt:time.Time{sec:, nsec:, loc:time.Location{name:\"UTC\", cacheStart:, cacheEnd:}}, UpdatedAt:time.Time{sec:, nsec:, loc:time.Location{name:\"UTC\", cacheStart:, cacheEnd:}}, Name:\"web\", URL:\"https://api.github.com/repos/mhausenblas/s4d/hooks/8321735\", Events:[\"push\"], Active:true, Config:map[url:http://52.37.239.156:8849/dploy], ID:8321735}" observe=done 
 ```
 
-Currently, the Webhooks require manual removal.
+Currently, while the `observer` Marathon app will be removed when user issue the `dploy destroy` command, the Webhooks still requires manual removal.
