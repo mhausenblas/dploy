@@ -17,7 +17,7 @@ So a complete `dploy.app` example content might look as follows:
 
 What happens is that with these two additional attributes, `dploy` registers a GitHub [Webhook](https://developer.github.com/webhooks/) the first time you run `dploy run`. From then on you can upgrade your app using  `git push`. Note that the `observer` is by default looking at the `dcos` branch but you can overwrite this using `trigger_branch` as an additional (optional) attribute in the descriptor file (last line of above YAML file).
 
-However, in order to make this work, an additional piece of data (a secret token) is necessary: a GitHub Personal Access Token (PAT). So, go to [github.com/settings/tokens](https://github.com/settings/tokens) and create a token. Let's say the token's value is `123abc*&%xzy`. Copy this token and paste it into a file called `.pat` file in the home directory of the Git repo; for example if the GitHub repo is [mhausenblas/s4d](https://github.com/mhausenblas/s4d) then this is what I'd expect to see on my local machine after cloning it:
+However, in order to make this work, an additional piece of data (a secret token) is necessary: a GitHub Personal Access Token (PAT). So, go to [github.com/settings/tokens](https://github.com/settings/tokens) and create a token. Let's say the token's value is `123abc*&%xzy`. Copy this token and paste it into a file called `.pat` in the home directory of the Git repo; for example if the GitHub repo is [mhausenblas/s4d](https://github.com/mhausenblas/s4d) then this is what I'd expect to see on my local machine after cloning it:
 
 ```bash
 ~/Documents/repos/mhausenblas/s4d (master)$ ls -al
