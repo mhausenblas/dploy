@@ -1,0 +1,39 @@
+{
+	"id": "/dployex/appserver",
+	"instances": 1,
+	"cpus": 0.1,
+	"mem": 64,
+	"cmd": "sleep 5 && echo I'm on version 0.0 >index.html && python3 -m http.server 8080",
+	"container": {
+		"type": "DOCKER",
+		"docker": {
+			"image": "python:3",
+			"forcePullImage": true,
+			"network": "BRIDGE",
+			"portMappings": [
+				{
+					"containerPort": 8080,
+					"hostPort": 0
+				}
+			]
+		}
+	},
+	"healthChecks": [
+		{
+			"protocol": "HTTP",
+			"path": "/",
+			"portIndex": 0,
+			"timeoutSeconds": 10,
+			"gracePeriodSeconds": 10,
+			"intervalSeconds": 2,
+			"maxConsecutiveFailures": 10
+		}
+	],
+	"upgradeStrategy": {
+		"minimumHealthCapacity": 0.85,
+		"maximumOverCapacity": 0.15
+	},
+	"acceptedResourceRoles": [
+		"slave_public"
+	]
+}

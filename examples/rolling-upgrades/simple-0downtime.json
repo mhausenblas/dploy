@@ -1,9 +1,9 @@
 {
-	"id": "/rode",
-	"instances": 1,
+	"id": "/dployex/appserver",
+	"instances": 3,
 	"cpus": 0.1,
-	"mem": 64,
-	"cmd": "sleep 5 && echo I'm on version 0.0 >index.html && python3 -m http.server 8080",
+	"mem": 32,
+	"cmd": "echo <img src=\"https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/rolling-upgrades/res/v1.jpg\"/ alt=\"v1\"> >index.html && python3 -m http.server 8080",
 	"container": {
 		"type": "DOCKER",
 		"docker": {

@@ -173,6 +173,7 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 			log.WithFields(log.Fields{"observer": "launch"}).Debug("Trying to launch observer with following app spec ", appSpec)
 			if _, err := os.Stat(observerTemplate); err == nil {
 				os.Remove(observerTemplate)
+				log.WithFields(log.Fields{"observer": "launch"}).Debug("Removed temporary observer template ", observerTemplate)
 			}
 			if appSpec != nil {
 				app, err := client.CreateApplication(appSpec)
