@@ -1,0 +1,32 @@
+{
+	"id": "/dployex/blog2go",
+	"cmd": "curl http:// > abc && cp abc /srv/jekyll && jekyll s",
+	"cpus": 0.2,
+	"mem": 128,
+	"container": {
+		"type": "DOCKER",
+		"docker": {
+			"image": "jekyll/jekyll",
+			"network": "BRIDGE",
+			"portMappings": [
+				{
+					"containerPort": 4000,
+					"hostPort": 0
+				}
+			]
+		}
+	},
+	"healthChecks": [
+		{
+			"protocol": "TCP",
+			"gracePeriodSeconds": 600,
+			"intervalSeconds": 30,
+			"portIndex": 0,
+			"timeoutSeconds": 10,
+			"maxConsecutiveFailures": 2
+		}
+	],
+	"acceptedResourceRoles": [
+		"slave_public"
+	]
+}

@@ -1,6 +1,6 @@
 # Rolling upgrades examples
 
-To do rolling upgrades with dploy, you use a declarative approach. Based on Marathon's [upgrade strategies](https://mesosphere.github.io/marathon/docs/) you define what upgrade strategy to apply for a µS.
+To do rolling upgrades with dploy, you use a declarative approach. Based on Marathon's [upgrade strategies](https://mesosphere.github.io/marathon/docs/rest-api.html#upgrade-strategy) you define what upgrade strategy to apply for a µS.
 In the following I'll walk you through a couple of zero-downtime scenarios, from the simple case of a rolling upgrade to blue-green deployments to canary releases.
 
 Requirements (in addition to a running DC/OS 1.7 cluster):
@@ -15,11 +15,42 @@ In the [simplest case](simple-0downtime.json) of a rolling upgrade, use the foll
 ```javascript
 ...
 "upgradeStrategy": {
-	"minimumHealthCapacity": 0.85,
-	"maximumOverCapacity": 0.15
+	"minimumHealthCapacity": 0.25,
+	"maximumOverCapacity": 0.25
 },
 ...
 ```
+
+The meaning of `minimumHealthCapacity`  and `maximumOverCapacity` is as follows:
+
+- `minimumHealthCapacity` …  a floating point value between 0 and 1 (which defaults to `1`), specifying the % of instances to maintain healthy during deployment; with `0` meaning all old instances are stopped before the new version is deployed and `1` meaning all instances of the new version are deployed side by side with the old one before it is stopped.
+- `maximumOverCapacity` …  a floating point value between 0 and 1 (which defaults to `1`), specifying the max. % of instances over capacity during deployment; with `0` meaning that during the upgrade process no additional capacity than may be used for old and new instances ( only when an old version is stopped, a new instance can be deployed) and  `1` meaning that all old and new instances can co-exist during the upgrade process.
+
+Note that the default values (both are `1`) mean a safe but somewhat resource-intensive upgrade.
+
+The following example, with `[vN]` being an app instance on version `N`, having a scale factor of `"instances": 4` and assuming a `"minimumHealthCapacity": 0.25` and `"maximumOverCapacity": 0.25` shows what this means in practice:
+
+```
+T0:    [v1] [v1] [v1] [v1]     
+                               
+T1:    deployment kicks off    
+                               
+T2:    [v1] [v1] [v1] [v1] [v2]
+                       |       
+T3:    [v1] [v1] [v1] [v2] [v2]
+                  |            
+T4:    [v1] [v1] [v2] [v2] [v2]
+             |                
+T5:    [v1] [v2] [v2] [v2] [v2]
+        |                      
+T6:    [v2] [v2] [v2] [v2]     
+                               
+T7:    deployment done         
+```
+
+A `minimumHealthCapacity` of `0.25` means that 25% (or: exactly one instance in our case) always needs to run on a certain version. I other words, at no time in the deployment can the app have less than one instance running with any given version, say, `v1`. When the deployment kicks off at timepoint `T1` (before that and up to incl. `T0` the current version of the app was `v1`) the `maximumOverCapacity` attribute becomes important: since we've set it to `0.25`  it means no more than 25% (or: exactly one instance in our case) can be run in addition to the already running instances. In other words: with this setting, no more than 5 instances of the app (in whatever version they might be in) can ever run at the same time. At `T2` one instance at version `v2` comes up, satisfying both capacity requirements; at `T3`, one `v1` instance is stopped and replaced by a `v2` instance; at `T4` the same happens again and with the `T5-T6` transition the last remaining `v1` instance is stopped and since we now have 4 instances of `v2` running all is good and as expected at `T7`.
+
+Lesson learned: certain combinations of `minimumHealthCapacity` and `maximumOverCapacity` make sense while others are not satisfiable, meaning that you can specify them, just the deployment will never be carried out. For example, a `"minimumHealthCapacity": 0.5` and `"maximumOverCapacity": 0.1` would be unsatisfiable (since you want to keep at least half of your instances around but only allow 10% overcapacity); to make this deployment satisfiable you'd need to change it to `"maximumOverCapacity": 0.5`.
 
 Initially, we deploy the app using the standard run command (make sure you have enabled [push-to-deploy](../../observer/) for the following to work):
 
