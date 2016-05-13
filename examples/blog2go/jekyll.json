@@ -1,6 +1,6 @@
 {
 	"id": "/dployex/blog2go",
-	"cmd": "curl http:// > abc && cp abc /srv/jekyll && jekyll s",
+	"cmd": "cp $MESOS_SANDBOX/dploy-master/example/blog2go/site /srv/jekyll && jekyll s",
 	"cpus": 0.2,
 	"mem": 128,
 	"container": {
@@ -25,6 +25,9 @@
 			"timeoutSeconds": 10,
 			"maxConsecutiveFailures": 2
 		}
+	],
+	"uris": [
+		"https://github.com/mhausenblas/dploy/archive/master.zip"
 	],
 	"acceptedResourceRoles": [
 		"slave_public"

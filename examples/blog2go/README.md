@@ -2,18 +2,6 @@
 
 In this example, we will walk through setting up and using Jekyll, a popular static blogging platform, via dploy.
 
-
-Via volume mount + uris:
-
-	"volumes": [
-		{
-			"containerPath": "/srv/jekyll",
-			"hostPath": "$(pwd)",
-			"mode": "RW"
-		}
-	],
-    "uris": ...
-
 ## Preparation
 
 You'll need a `dploy.app` app descriptor with a content looking like the following (replace with your own values):
@@ -41,8 +29,12 @@ $ dploy ps
 To find out where your blog is serving and available on the public Internet, do the following (for AWS/CoreOS):
 
 ```bash
-$ echo "curl -s ifconfig.co" | dcos node ssh --master-proxy --mesos-id=$(dcos task --json | jq --raw-output '.[] | select(.name == "/dployex/blog2go") | .slave_id') 2>/dev/null
+$ BLOG2GO_IP=$(echo "curl -s ifconfig.ca" | dcos node ssh --master-proxy --mesos-id=$(dcos task --json | jq --raw-output '.[] | select(.name == "/dployex/blog2go") | .slave_id') 2>/dev/null) 
+$ BLOG2GO_PORT=$(dcos marathon task list --json | jq "map(select(.appId==\"/dployex/blog2go\").ports)")
+$ BLOG2GO_URL=http://$BLOG2GO_IP:$BLOG2GO_PORT/
+$ echo $BLOG2GO_URL
 ```
+Now, if you visit the value of `$BLOG2GO_URL` in your browser (output of last line of above) you should see the following:
 
 TODO: insert screen shot here
 
