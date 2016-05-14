@@ -11,7 +11,7 @@ marathon_url: http://localhost:8080
 app_name: blog2go
 repo_url: https://github.com/mhausenblas/s4d
 public_node: 52.24.105.248
-trigger_branch: master
+trigger_branch: blog2go
 ```
 
 In addition you'll need a GitHub Personal Access Token and make it available via a `.pat` file, see the [observer docs](../../observer/) for details.
@@ -29,8 +29,8 @@ $ dploy ps
 To find out where your blog is serving and available on the public Internet, do the following (for AWS/CoreOS):
 
 ```bash
-$ BLOG2GO_IP=$(echo "curl -s ifconfig.ca" | dcos node ssh --master-proxy --mesos-id=$(dcos task --json | jq --raw-output '.[] | select(.name == "/dployex/blog2go") | .slave_id') 2>/dev/null) 
-$ BLOG2GO_PORT=$(dcos marathon task list --json | jq "map(select(.appId==\"/dployex/blog2go\").ports)")
+$ BLOG2GO_IP=$(echo "curl -s ifconfig.ca" | dcos node ssh --master-proxy --mesos-id=$(dcos task --json | jq --raw-output '.[] | select(.name == "blog2go.dployex") | .slave_id') 2>/dev/null) 
+$ BLOG2GO_PORT=$(dcos marathon task list --json | jq "map(select(.appId==\"/dployex/blog2go\").ports[0])" | tail -2 | head -n 1 | cut -c 3-)
 $ BLOG2GO_URL=http://$BLOG2GO_IP:$BLOG2GO_PORT/
 $ echo $BLOG2GO_URL
 ```
