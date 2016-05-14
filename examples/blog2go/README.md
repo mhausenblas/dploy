@@ -4,17 +4,17 @@ In this example, we will walk through setting up and using Jekyll, a popular sta
 
 ## Preparation
 
-You'll need a `dploy.app` app descriptor with a content looking like the following (replace with your own values):
+You'll need a `dploy.app` app descriptor with [a content](https://github.com/mhausenblas/s4d/tree/blog2go) looking like the following (replace with your own values):
 
 ```
 marathon_url: http://localhost:8080
-app_name: blog2go
+app_name: myblog
 repo_url: https://github.com/mhausenblas/s4d
 public_node: 52.24.105.248
 trigger_branch: blog2go
 ```
 
-In addition you'll need a GitHub Personal Access Token and make it available via a `.pat` file, see the [observer docs](../../observer/) for details.
+In addition you'll need a GitHub Personal Access Token and make it available via a `.pat` file, see the [observer docs](../../observer/) for details. 
 
 ## Launch
 

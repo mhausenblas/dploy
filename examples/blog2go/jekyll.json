@@ -1,6 +1,6 @@
 {
 	"id": "/dployex/blog2go",
-	"cmd": "curl -OsL https://github.com/mhausenblas/s4d/archive/blog2go.zip && unzip blog2go.zip && cd s4d-blog2go/examples/blog2go/myblog/ && jekyll serve",
+	"cmd": "curl -OsL https://github.com/mhausenblas/s4d/archive/blog2go.zip && unzip blog2go.zip && cd s4d-blog2go/myblog/ && jekyll serve",
 	"cpus": 0.2,
 	"mem": 128,
 	"container": {
