@@ -308,9 +308,10 @@ func Scale(workdir string, showAll bool, pid string, instances int) bool {
 func Upgrade(workdir string) bool {
 	setLogLevel()
 	appDescriptor := readAppDescriptor(workdir)
+	log.WithFields(log.Fields{"cmd": "upgrade"}).Debug("Got app descriptor from workspace ", workdir)
 	marathonURL, err := url.Parse(appDescriptor.MarathonURL)
 	if err != nil {
-		log.WithFields(log.Fields{"cmd": "updgrade"}).Error("Failed to connect to Marathon due to ", err)
+		log.WithFields(log.Fields{"cmd": "upgrade"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
 	marathonUpdateApps(*marathonURL, appDescriptor.AppName, workdir)

@@ -451,6 +451,7 @@ func marathonUpdateApps(marathonURL url.URL, dployAppName string, workdir string
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
 		appSpec, _ := readAppSpec(dployAppName, specFilename)
+		log.WithFields(log.Fields{"marathon": "update_app"}).Debug("Looking at ", dployAppName, " in ", specFilename)
 		if appSpec != nil {
 			//TODO: only update apps that have actually changed
 			_, err := client.UpdateApplication(appSpec, true) // note: for now we default to force updates
