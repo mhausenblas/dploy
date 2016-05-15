@@ -427,7 +427,7 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
-		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Patched Marathon, ready to update")
+		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Patched Marathon, ready to update using workspace " + repo + "-" + targetBranch)
 		success := dploy.Upgrade(repo + "-" + targetBranch)
 		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Update done")
 		lastDeployment = time.Now()
