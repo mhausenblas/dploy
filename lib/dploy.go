@@ -314,6 +314,10 @@ func Upgrade(workdir string) bool {
 		log.WithFields(log.Fields{"cmd": "upgrade"}).Error("Failed to connect to Marathon due to ", err)
 		return false
 	}
-	marathonUpdateApps(*marathonURL, appDescriptor.AppName, workdir)
+	uerr := marathonUpdateApps(*marathonURL, appDescriptor.AppName, workdir)
+	if uerr != nil {
+		log.WithFields(log.Fields{"cmd": "upgrade"}).Error("Failed to update app(s) due to ", uerr)
+		return false
+	}
 	return true
 }

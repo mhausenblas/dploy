@@ -446,7 +446,7 @@ func marathonCreateApps(marathonURL url.URL, dployAppName string, workdir string
 	}
 }
 
-func marathonUpdateApps(marathonURL url.URL, dployAppName string, workdir string) {
+func marathonUpdateApps(marathonURL url.URL, dployAppName string, workdir string) error {
 	client := marathonClient(marathonURL)
 	appSpecs := getAppSpecs(workdir)
 	for _, specFilename := range appSpecs {
@@ -457,12 +457,14 @@ func marathonUpdateApps(marathonURL url.URL, dployAppName string, workdir string
 			_, err := client.UpdateApplication(appSpec, true) // note: for now we default to force updates
 			if err != nil {
 				log.WithFields(log.Fields{"marathon": "update_app"}).Error("Failed to update app due to ", err)
+				return err
 			} else {
 				log.WithFields(log.Fields{"marathon": "update_app"}).Debug("Updated app: ", appSpec.ID)
 			}
 			client.WaitOnApplication(appSpec.ID, DEFAULT_DEPLOY_WAIT_TIME*time.Second)
 		}
 	}
+	return nil
 }
 
 func marathonDeleteApps(marathonURL url.URL, dployAppName string, workdir string) {

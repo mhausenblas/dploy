@@ -429,7 +429,11 @@ func main() {
 		}
 		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Patched Marathon, ready to update using workspace " + repo + "-" + targetBranch)
 		success := dploy.Upgrade(repo + "-" + targetBranch)
-		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Update done")
+		if success {
+			log.WithFields(log.Fields{"handle": "/dploy"}).Info("Update successfully carried out")
+		} else {
+			log.WithFields(log.Fields{"handle": "/dploy"}).Info("Update problems")
+		}
 		lastDeployment = time.Now()
 		dr.Success = success
 		dr.Msg = fmt.Sprintf("New version of %s/%s deployed at %s", owner, repo, lastDeployment)
