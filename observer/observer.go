@@ -343,14 +343,14 @@ func patchMarathon(workdir string) error {
 	appDescriptor := dploy.DployApp{}
 	uerr := yaml.Unmarshal([]byte(d), &appDescriptor)
 	if uerr != nil {
-		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to de-serialize app descriptor due to %v", uerr)
+		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to de-serialize app descriptor due to ", uerr)
 		return fmt.Errorf("Failed to de-serialize app descriptor due to ", uerr)
 	}
 	log.WithFields(log.Fields{"observer": "patchmarathon"}).Debug("Got valid app descriptor ")
 	appDescriptor.MarathonURL = marathonURL()
 	ob, merr := yaml.Marshal(&appDescriptor)
 	if merr != nil {
-		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to serialize app descriptor due to %v", merr)
+		log.WithFields(log.Fields{"observer": "patchmarathon"}).Error("Failed to serialize app descriptor due to ", merr)
 		return fmt.Errorf("Failed to serialize app descriptor due to ", merr)
 	}
 	f, perr := os.Create(ad)
@@ -407,6 +407,7 @@ func main() {
 	mux.HandleFunc("/dploy", func(w http.ResponseWriter, r *http.Request) {
 		dr := &DployResult{}
 		cwd, _ := os.Getwd()
+		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Noticed change of branch ", targetBranch, " in ", owner, "/", repo)
 		err := pull(owner, repo, cwd)
 		if err != nil {
 			dr.Success = false
@@ -416,6 +417,7 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
+		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Pulled new version, ready to patch Marathon")
 		perr := patchMarathon(repo + "-" + targetBranch)
 		if perr != nil {
 			dr.Success = false
@@ -425,7 +427,9 @@ func main() {
 			fmt.Fprint(w, string(drb))
 			return
 		}
+		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Patched Marathon, ready to update")
 		success := dploy.Upgrade(repo + "-" + targetBranch)
+		log.WithFields(log.Fields{"handle": "/dploy"}).Info("Update done")
 		lastDeployment = time.Now()
 		dr.Success = success
 		dr.Msg = fmt.Sprintf("New version of %s/%s deployed at %s", owner, repo, lastDeployment)
