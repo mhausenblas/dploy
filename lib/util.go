@@ -146,9 +146,8 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 	}
 	client := marathonClient(*marathonURL)
 	patoken, patExists := getPAT(workdir)
-	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists {
-		// https://github.com/OWNER/REPO -> OWNER, REPO
-		owpo := appDescriptor.RepoURL[len("https://github.com/"):]
+	if appDescriptor.RepoURL != "" && appDescriptor.PublicNode != "" && patExists { // push-to-deploy is configured
+		owpo := appDescriptor.RepoURL[len("https://github.com/"):] // https://github.com/OWNER/REPO -> OWNER, REPO
 		owner := strings.Split(owpo, "/")[0]
 		repo := strings.Split(owpo, "/")[1]
 		log.WithFields(log.Fields{"observer": "launch"}).Debug("Got repo ", owner, "/", repo)
@@ -159,8 +158,7 @@ func launchObserver(appDescriptor DployApp, workdir string) bool {
 		}
 		observerTemplate, _ := filepath.Abs(filepath.Join(workdir, fn))
 		appSpec, _ := readAppSpec(appDescriptor.AppName, observerTemplate)
-
-		if ok := observerAlive(*marathonURL, appSpec.ID); ok {
+		if ok := observerAlive(*marathonURL, appSpec.ID); ok { // observer is already running
 			return true
 		} else {
 			appSpec.AddEnv("DPLOY_PUBLIC_NODE", appDescriptor.PublicNode)

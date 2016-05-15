@@ -381,7 +381,6 @@ func main() {
 	go bootstrap()
 	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
-
 		s := &Status{
 			Owner:        owner,
 			Repo:         repo,

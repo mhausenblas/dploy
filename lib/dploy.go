@@ -160,10 +160,10 @@ func Run(workdir string, showAll bool) bool {
 	}
 	fmt.Printf("%s\tWorking\n", USER_MSG_INFO)
 	go showSpinner(100 * time.Millisecond)
+	launchObserver(appDescriptor, workdir)
 	marathonCreateApps(*marathonURL, appDescriptor.AppName, workdir)
 	hideSpinner()
 	fmt.Printf("%s\tLaunched your app!\n", USER_MSG_SUCCESS)
-	launchObserver(appDescriptor, workdir)
 	fmt.Printf("%s\tNow you can use `dploy ps` to list processes\n", USER_MSG_INFO)
 	fmt.Printf("\tor `dploy destroy` to tear down the app again.\n")
 	return true
