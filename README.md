@@ -37,6 +37,7 @@ Alternatively, you can [download binaries](https://github.com/mhausenblas/dploy/
 - [x] `dploy ps` … lists runtime properties of the µS-based app
 - [x] `dploy scale`… scales the µS-based app
 - [x] Support push-to-deploy, see [observer](observer/)
+- [ ] Add examples (blog2go, rolling upgrades, etc.)
 - [ ] Expose metrics via `dploy -all ps`
 - [ ] Transparent handling of secrets with [Vault](https://github.com/brndnmtthws/vault-dcos)
 - [ ] Advanced µS examples using linkerd, VAMP
