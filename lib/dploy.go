@@ -31,6 +31,7 @@ const (
 	CMD_TRUNCATE               int           = 17
 	EXAMPLE_HELLO_WORLD        string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/helloworld.json"
 	EXAMPLE_BUZZ               string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/buzz/buzz.json"
+	EXAMPLE_WP                 string        = "https://raw.githubusercontent.com/mhausenblas/dploy/master/examples/stateful/wordpress.json"
 	USER_MSG_SUCCESS           string        = "🙌"
 	USER_MSG_PROBLEM           string        = "🙁"
 	USER_MSG_INFO              string        = "🗣"
@@ -81,10 +82,14 @@ func Init(workdir string, showAll bool) bool {
 	case "all":
 		Download(EXAMPLE_HELLO_WORLD, specsDir)
 		Download(EXAMPLE_BUZZ, specsDir)
+		Download(EXAMPLE_WP, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with some examples\n")
 	case "buzz":
 		Download(EXAMPLE_BUZZ, specsDir)
 		fmt.Printf("\t\tInitialized app spec directory with the buzz example\n")
+	case "wp":
+		Download(EXAMPLE_WP, specsDir)
+		fmt.Printf("\t\tInitialized app spec directory with the WordPress example\n")
 	default:
 	}
 	fmt.Printf("%s\tNow it's time to edit the app descriptor and adapt or add Marathon app specs.\n", USER_MSG_INFO)
