@@ -1,5 +1,7 @@
 # dploy
 
+[![Join the chat at https://gitter.im/mhausenblas/dploy](https://badges.gitter.im/mhausenblas/dploy.svg)](https://gitter.im/mhausenblas/dploy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The [DC/OS](https://dcos.io) deployment tool for appops allows you to create, deploy and manage services and apps composed of microservices (µS):
 
 - It is simple: it has 8 commands and that's that.
